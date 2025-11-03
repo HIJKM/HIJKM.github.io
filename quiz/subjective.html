@@ -44,6 +44,11 @@
             const [showFeedback, setShowFeedback] = useState(false);
             const [isCorrect, setIsCorrect] = useState(false);
 
+            // 텍스트 입력 모달 관련 상태
+            const [showJsonModal, setShowJsonModal] = useState(false);
+            const [jsonText, setJsonText] = useState('');
+            const [jsonError, setJsonError] = useState('');
+
             // JSON 파일 업로드
             const handleFileUpload = async (event) => {
                 const file = event.target.files[0];
@@ -78,6 +83,42 @@
                     setLoading(false);
                 } catch (e) {
                     setError(`파일 로드 실패: ${e.message}`);
+                    setLoading(false);
+                }
+            };
+
+            // JSON 텍스트 입력 처리
+            const handleJsonTextSubmit = () => {
+                setJsonError('');
+                setLoading(true);
+
+                try {
+                    const data = JSON.parse(jsonText);
+
+                    if (!Array.isArray(data)) {
+                        throw new Error('JSON은 배열 형식이어야 합니다.');
+                    }
+
+                    data.forEach((item, index) => {
+                        if (!item.question || !item.answer) {
+                            throw new Error(`${index + 1}번째 문제에 필수 필드(question, answer)가 없습니다.`);
+                        }
+                    });
+
+                    // ID 할당
+                    const questionsWithId = data.map((q, index) => ({
+                        ...q,
+                        id: q.id || index
+                    }));
+
+                    setQuestions(questionsWithId);
+                    setResults({});
+                    setQuizStarted(true);
+                    setJsonText('');
+                    setShowJsonModal(false);
+                    setLoading(false);
+                } catch (e) {
+                    setJsonError(`JSON 로드 실패: ${e.message}`);
                     setLoading(false);
                 }
             };
@@ -130,19 +171,31 @@
                 setShowFeedback(false);
             };
 
-            // 정답/오답 현황 다운로드
+            // 정답/오답 현황 다운로드 (문제 JSON + 정답 JSON)
             const downloadResults = () => {
-                const resultsData = questions.map(q => ({
+                // 원본 문제 JSON
+                const questionsData = questions.map(q => ({
+                    id: q.id,
+                    question: q.question,
+                    answer: q.answer,
+                    explanation: q.explanation,
+                    domain: q.domain || 'N/A'
+                }));
+
+                // 정답 및 결과 JSON
+                const answersData = questions.map(q => ({
                     id: q.id,
                     question: q.question,
                     domain: q.domain || 'N/A',
-                    correctAnswer: q.answer,
+                    result: results[q.id] ? (results[q.id].correct ? '정답' : '오답') : '미응시',
                     userAnswer: results[q.id]?.answer || 'N/A',
-                    result: results[q.id] ? (results[q.id].correct ? '정답' : '오답') : '미응시'
+                    correctAnswer: q.answer
                 }));
 
-                const dataStr = JSON.stringify(resultsData, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                // 두 배열을 대괄호로 구분하여 합치기
+                const combinedData = `[\n${JSON.stringify(questionsData, null, 2).slice(1, -1)}\n]\n\n[\n${JSON.stringify(answersData, null, 2).slice(1, -1)}\n]`;
+
+                const dataBlob = new Blob([combinedData], { type: 'application/json' });
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
                 link.href = url;
@@ -188,6 +241,15 @@
                                 <p className="text-center text-green-600 font-semibold">파일 로딩 중...</p>
                             )}
 
+                            <div className="mb-6">
+                                <button
+                                    onClick={() => setShowJsonModal(true)}
+                                    className="w-full py-2 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition"
+                                >
+                                    📝 JSON 텍스트 붙여넣기
+                                </button>
+                            </div>
+
                             <div className="mt-6 pt-6 border-t border-gray-200">
                                 <p className="text-gray-600 text-sm mb-4">JSON 파일 형식:</p>
                                 <pre className="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40 text-gray-700">
@@ -203,12 +265,60 @@
                             </div>
 
                             <button
-                                onClick={() => window.location.href = 'index.html'}
+                                onClick={() => window.location.href = 'quiz.html'}
                                 className="mt-6 w-full py-2 px-4 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
                             >
                                 돌아가기
                             </button>
                         </div>
+
+                        {/* JSON 텍스트 입력 모달 */}
+                        {showJsonModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+                                        <h2 className="text-2xl font-bold text-gray-800">JSON 텍스트 입력</h2>
+                                        <button
+                                            onClick={() => setShowJsonModal(false)}
+                                            className="text-gray-500 hover:text-gray-700 text-2xl"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+
+                                    <div className="p-6">
+                                        {jsonError && (
+                                            <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-lg">
+                                                <p className="text-red-700 text-sm">{jsonError}</p>
+                                            </div>
+                                        )}
+
+                                        <textarea
+                                            value={jsonText}
+                                            onChange={(e) => setJsonText(e.target.value)}
+                                            placeholder="JSON을 붙여넣으세요..."
+                                            className="w-full h-64 p-4 border-2 border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:border-green-600"
+                                        />
+
+                                        <div className="mt-4 flex gap-4">
+                                            <button
+                                                onClick={handleJsonTextSubmit}
+                                                disabled={loading || !jsonText.trim()}
+                                                className="flex-1 py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                            >
+                                                {loading ? '로딩 중...' : '시작하기'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowJsonModal(false)}
+                                                className="flex-1 py-3 px-4 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                                            >
+                                                취소
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
             }

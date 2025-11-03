@@ -118,7 +118,7 @@
                 <!-- 탭 네비게이션 -->
                 <div class="flex gap-4 mb-6 border-b border-gray-200">
                     <button onclick="switchTab('mcq')" class="tab-button active px-4 py-2 font-semibold">
-                        📋 객관식 (MCQ)
+                        📋 객관식
                     </button>
                     <button onclick="switchTab('subjective')" class="tab-button px-4 py-2 font-semibold">
                         ✍️ 주관식
@@ -223,11 +223,12 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-4">💡 LLM을 이용한 JSON 생성</h3>
                     <p class="text-gray-600 mb-4">ChatGPT, Claude 등의 LLM 서비스에 다음 프롬프트를 복사하여 사용하세요:</p>
 
-                    <div class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-4">
-                        <button onclick="copyToClipboard('llmPrompt')" class="copy-button float-right py-1 px-3 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700 transition">
+                    <!-- 객관식 LLM 프롬프트 -->
+                    <div id="mcqLLMPrompt" class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-4">
+                        <button onclick="copyToClipboard('llmPromptMCQ')" class="copy-button float-right py-1 px-3 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700 transition">
                             📋 복사
                         </button>
-                        <pre id="llmPrompt" class="text-gray-800 text-sm whitespace-pre-wrap">다음의 JSON 형식에 맞춰서 [주제]에 대한 객관식/주관식 문제를 [개수]개 만들어주세요.
+                        <pre id="llmPromptMCQ" class="text-gray-800 text-sm whitespace-pre-wrap">제공된 파일에 대해 다음 양식에 맞도록 퀴즈를 작성하여 json 형식으로 반환하십시오.
 
 [객관식 형식]
 {
@@ -237,6 +238,19 @@
   "explanation": "해설",
   "domain": "영역"
 }
+
+주의사항:
+- JSON 배열 형식으로 반환하세요
+- 정답은 명확하고 검증 가능해야 합니다
+- 해설은 교육적이고 자세해야 합니다</pre>
+                    </div>
+
+                    <!-- 주관식 LLM 프롬프트 -->
+                    <div id="subjectiveLLMPrompt" class="hidden bg-green-50 border border-green-300 rounded-lg p-4 mb-4">
+                        <button onclick="copyToClipboard('llmPromptSubjective')" class="copy-button float-right py-1 px-3 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition">
+                            📋 복사
+                        </button>
+                        <pre id="llmPromptSubjective" class="text-gray-800 text-sm whitespace-pre-wrap">제공된 파일에 대해 다음 양식에 맞도록 퀴즈를 작성하여 json 형식으로 반환하십시오.
 
 [주관식 형식]
 {
@@ -270,12 +284,18 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
 
+            // LLM 프롬프트도 함께 변경
+            document.getElementById('mcqLLMPrompt').classList.add('hidden');
+            document.getElementById('subjectiveLLMPrompt').classList.add('hidden');
+
             // 선택된 탭 표시
             if (tab === 'mcq') {
                 document.getElementById('mcqTab').classList.remove('hidden');
+                document.getElementById('mcqLLMPrompt').classList.remove('hidden');
                 document.querySelectorAll('.tab-button')[0].classList.add('active');
             } else {
                 document.getElementById('subjectiveTab').classList.remove('hidden');
+                document.getElementById('subjectiveLLMPrompt').classList.remove('hidden');
                 document.querySelectorAll('.tab-button')[1].classList.add('active');
             }
         }
