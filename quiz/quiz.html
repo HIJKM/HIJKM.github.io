@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS 퀴즈 - 모드 선택</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .mode-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .copy-button {
+            transition: all 0.2s ease;
+        }
+        .copy-button:active {
+            transform: scale(0.95);
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .code-block {
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active {
+            border-bottom-color: currentColor;
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">AWS 퀴즈</h1>
+            <p class="text-xl text-gray-600">학습 모드를 선택하세요</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl w-full">
+            <!-- 객관식 카드 -->
+            <div class="mode-card bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <div class="text-5xl mb-4 text-center">📋</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-3 text-center">객관식</h2>
+                <p class="text-gray-600 mb-6 text-center">4개의 선택지 중에서 정답을 고르는 퀴즈입니다.</p>
+                <a
+                    href="mcq.html"
+                    class="block w-full py-3 px-6 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 text-center"
+                >
+                    객관식 시작
+                </a>
+            </div>
+
+            <!-- 주관식 카드 -->
+            <div class="mode-card bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <div class="text-5xl mb-4 text-center">✍️</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-3 text-center">주관식</h2>
+                <p class="text-gray-600 mb-6 text-center">직접 답을 입력하여 답변하는 퀴즈입니다.</p>
+                <a
+                    href="subjective.html"
+                    class="block w-full py-3 px-6 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 text-center"
+                >
+                    주관식 시작
+                </a>
+            </div>
+        </div>
+
+        <!-- API 명세서 버튼 -->
+        <button
+            onclick="openApiModal()"
+            class="mt-12 py-2 px-6 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition"
+        >
+            📚 JSON 형식 안내
+        </button>
+    </div>
+
+    <!-- API 명세서 모달 -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-overlay z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">JSON 형식 안내</h2>
+                <button onclick="closeApiModal()" class="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+            </div>
+
+            <div class="p-6">
+                <!-- 탭 네비게이션 -->
+                <div class="flex gap-4 mb-6 border-b border-gray-200">
+                    <button onclick="switchTab('mcq')" class="tab-button active px-4 py-2 font-semibold">
+                        📋 객관식 (MCQ)
+                    </button>
+                    <button onclick="switchTab('subjective')" class="tab-button px-4 py-2 font-semibold">
+                        ✍️ 주관식
+                    </button>
+                </div>
+
+                <!-- 객관식 탭 -->
+                <div id="mcqTab" class="tab-content">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">객관식 JSON 형식</h3>
+
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">필드 설명:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">question</span> (필수): 질문 문장</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">options</span> (필수): 4개의 선택지 배열</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">correctAnswer</span> (필수): 정답의 인덱스 (0-3)</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">explanation</span> (필수): 정답 해설</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">domain</span> (선택): 문제 영역/카테고리</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">예시:</h4>
+                        <div class="code-block text-gray-800">
+                            <pre id="mcqExample">[
+  {
+    "question": "클라우드 컴퓨팅의 6가지 이점 중, 데이터 센터와 서버에 대규모로 선행 투자할 필요 없이, 컴퓨팅 리소스를 사용한 만큼만 비용을 지불하는 방식을 설명하는 것은 무엇일까요?",
+    "options": [
+      "규모의 경제 혜택",
+      "예상 용량 불필요",
+      "고정 지출을 가변 지출로 전환",
+      "속도 및 민첩성 향상"
+    ],
+    "correctAnswer": 2,
+    "explanation": "고정 지출을 가변 지출로 전환(Trade fixed expense for variable expense)은 클라우드 컴퓨팅의 핵심 이점 중 하나입니다.",
+    "domain": "클라우드 개념"
+  },
+  {
+    "question": "다음 중 AWS의 서비스는?",
+    "options": ["Google Cloud", "Azure", "EC2", "Heroku"],
+    "correctAnswer": 2,
+    "explanation": "EC2(Elastic Compute Cloud)는 AWS의 컴퓨팅 서비스입니다.",
+    "domain": "AWS 서비스"
+  }
+]</pre>
+                        </div>
+                    </div>
+
+                    <button onclick="copyToClipboard('mcqExample')" class="copy-button py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">
+                        📋 복사
+                    </button>
+                </div>
+
+                <!-- 주관식 탭 -->
+                <div id="subjectiveTab" class="tab-content hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">주관식 JSON 형식</h3>
+
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-2">필드 설명:</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">question</span> (필수): 질문 문장</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">answer</span> (필수): 정답 (텍스트, 숫자 모두 가능)</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">explanation</span> (선택): 정답 해설</li>
+                            <li><span class="font-mono bg-gray-100 px-2 py-1 rounded">domain</span> (선택): 문제 영역/카테고리</li>
+                        </ul>
+                        <p class="text-gray-600 mt-3 text-sm">✅ 정답 비교: 대소문자와 공백을 무시하고 비교합니다 (예: "Seoul" = "seoul" = "SEOUL")</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">예시:</h4>
+                        <div class="code-block text-gray-800">
+                            <pre id="subjectiveExample">[
+  {
+    "question": "AWS EC2는 무엇의 약자인가?",
+    "answer": "Elastic Compute Cloud",
+    "explanation": "EC2는 Elastic Compute Cloud의 약자로, AWS의 주요 컴퓨팅 서비스입니다.",
+    "domain": "AWS 서비스"
+  },
+  {
+    "question": "서울의 영문명은?",
+    "answer": "Seoul",
+    "explanation": "서울은 한국의 수도이며, 영문으로 Seoul이라고 표기합니다.",
+    "domain": "지리"
+  },
+  {
+    "question": "2 + 2 = ?",
+    "answer": "4",
+    "explanation": "기본적인 산술입니다.",
+    "domain": "수학"
+  }
+]</pre>
+                        </div>
+                    </div>
+
+                    <button onclick="copyToClipboard('subjectiveExample')" class="copy-button py-2 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
+                        📋 복사
+                    </button>
+                </div>
+
+                <!-- LLM 프롬프트 섹션 -->
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">💡 LLM을 이용한 JSON 생성</h3>
+                    <p class="text-gray-600 mb-4">ChatGPT, Claude 등의 LLM 서비스에 다음 프롬프트를 복사하여 사용하세요:</p>
+
+                    <div class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-4">
+                        <button onclick="copyToClipboard('llmPrompt')" class="copy-button float-right py-1 px-3 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700 transition">
+                            📋 복사
+                        </button>
+                        <pre id="llmPrompt" class="text-gray-800 text-sm whitespace-pre-wrap">다음의 JSON 형식에 맞춰서 [주제]에 대한 객관식/주관식 문제를 [개수]개 만들어주세요.
+
+[객관식 형식]
+{
+  "question": "질문",
+  "options": ["선택지1", "선택지2", "선택지3", "선택지4"],
+  "correctAnswer": 정답인덱스(0-3),
+  "explanation": "해설",
+  "domain": "영역"
+}
+
+[주관식 형식]
+{
+  "question": "질문",
+  "answer": "정답",
+  "explanation": "해설",
+  "domain": "영역"
+}
+
+주의사항:
+- JSON 배열 형식으로 반환하세요
+- 정답은 명확하고 검증 가능해야 합니다
+- 해설은 교육적이고 자세해야 합니다</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openApiModal() {
+            document.getElementById('apiModal').classList.remove('hidden');
+        }
+
+        function closeApiModal() {
+            document.getElementById('apiModal').classList.add('hidden');
+        }
+
+        function switchTab(tab) {
+            // 모든 탭 콘텐츠 숨기기
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            // 선택된 탭 표시
+            if (tab === 'mcq') {
+                document.getElementById('mcqTab').classList.remove('hidden');
+                document.querySelectorAll('.tab-button')[0].classList.add('active');
+            } else {
+                document.getElementById('subjectiveTab').classList.remove('hidden');
+                document.querySelectorAll('.tab-button')[1].classList.add('active');
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                // 복사 완료 피드백
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ 복사됨!';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('복사에 실패했습니다.');
+            });
+        }
+
+        // 모달 바깥 클릭 시 닫기
+        document.getElementById('apiModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeApiModal();
+            }
+        });
+    </script>
+</body>
+</html>
