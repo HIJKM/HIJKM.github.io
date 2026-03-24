@@ -1,0 +1,28 @@
+---
+layout: default
+title: "태그"
+permalink: /tags/
+---
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title"><i class="fa fa-tags"></i> 태그</h1>
+  </header>
+  <div class="post-content">
+    {% assign sorted_tags = site.tags | sort %}
+    {% for tag in sorted_tags %}
+    <h2 id="{{ tag[0] }}">
+      <span class="tag-pill" style="font-size:1rem;">#{{ tag[0] }}</span>
+      <small style="color: var(--text-muted); font-size: 0.8rem;">{{ tag[1].size }}개</small>
+    </h2>
+    <ul style="margin-bottom: 2rem;">
+      {% for post in tag[1] %}
+      <li style="padding: 0.3rem 0;">
+        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">{{ post.date | date: "%Y.%m.%d" }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,56 @@
+title: "My Knowledge Garden"
+tagline: "생각을 연결하는 공간"
+description: "개발, 자동화, 그리고 아이디어를 기록하는 블로그"
+url: "https://username.github.io"
+baseurl: ""
+
+author:
+  name: "뭘봐"
+  email: ""
+
+timezone: Asia/Seoul
+lang: ko-KR
+
+# Chirpy-style settings
+theme_mode: dark   # light | dark
+avatar: /assets/img/avatar.png
+
+toc: true
+comments:
+  active: false
+
+paginate: 10
+
+# Build
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    block:
+      line_numbers: true
+
+# Plugins
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Collections
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      comments: false
+      toc: true
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - README.md

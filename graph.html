@@ -1,0 +1,115 @@
+---
+layout: default
+title: "지식 그래프"
+permalink: /graph/
+---
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title"><i class="fa fa-project-diagram"></i> 지식 그래프</h1>
+    <p style="color: var(--text-secondary);">모든 글의 연결 관계를 한눈에 확인하세요. 노드를 클릭하면 해당 글로 이동합니다.</p>
+  </header>
+  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; height: 600px; position: relative;">
+    <svg id="knowledge-graph-full" style="width:100%; height:100%;"></svg>
+    <div id="full-graph-tooltip" class="graph-tooltip" style="display:none;"></div>
+  </div>
+  <div class="graph-legend" style="margin-top: 1rem; flex-direction: row; gap: 1.5rem;">
+    <span class="legend-item"><span class="dot dot-current"></span> 선택된 글</span>
+    <span class="legend-item"><span class="dot dot-related"></span> 연결된 글</span>
+    <span class="legend-item"><span class="dot dot-other"></span> 다른 글</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+// Full-page graph
+(async function() {
+  const base = window.SITE_BASEURL || '';
+  let data;
+  try {
+    const res = await fetch(`${base}/graph-data.json`);
+    data = await res.json();
+  } catch(e) { return; }
+
+  if (!data || !data.nodes.length) return;
+
+  data.nodes.forEach(n => n.linkCount = 0);
+  data.links.forEach(l => {
+    const s = data.nodes.find(n => n.id === (typeof l.source === 'object' ? l.source.id : l.source));
+    const t = data.nodes.find(n => n.id === (typeof l.target === 'object' ? l.target.id : l.target));
+    if (s) s.linkCount++;
+    if (t) t.linkCount++;
+  });
+
+  const container = document.querySelector('[style*="height: 600px"]');
+  const svgEl = document.getElementById('knowledge-graph-full');
+  const w = container.clientWidth, h = 600;
+
+  const svg = d3.select(svgEl).attr('width', w).attr('height', h);
+  const g = svg.append('g');
+
+  const zoom = d3.zoom().scaleExtent([0.2, 4])
+    .on('zoom', e => g.attr('transform', e.transform));
+  svg.call(zoom);
+  svg.call(zoom.transform, d3.zoomIdentity.translate(w/2, h/2).scale(0.7));
+
+  const sim = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(90).strength(0.3))
+    .force('charge', d3.forceManyBody().strength(-220).distanceMax(400))
+    .force('center', d3.forceCenter(0, 0))
+    .force('collision', d3.forceCollide().radius(d => 6 + Math.min(d.linkCount||0,5)*1.5 + 10));
+
+  let selected = null;
+
+  const link = g.append('g').selectAll('line').data(data.links).enter()
+    .append('line').attr('stroke', '#3b4261').attr('stroke-opacity', 0.5).attr('stroke-width', 1.5);
+
+  const tooltip = document.getElementById('full-graph-tooltip');
+
+  const node = g.append('g').selectAll('g').data(data.nodes).enter().append('g')
+    .call(d3.drag()
+      .on('start', (e,d) => { if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
+      .on('end', (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+  node.append('circle')
+    .attr('r', d => 6 + Math.min(d.linkCount||0,5)*1.5)
+    .attr('fill', '#7aa2f7').attr('opacity', 0.85)
+    .attr('stroke', '#1a1b26').attr('stroke-width', 1.5);
+
+  node.append('text')
+    .attr('dx', d => 8 + Math.min(d.linkCount||0,5)*1.5)
+    .attr('dy', '0.35em')
+    .attr('font-size', 11)
+    .attr('fill', '#a9b1d6')
+    .attr('font-family', 'Noto Sans KR, sans-serif')
+    .text(d => d.title.length > 20 ? d.title.slice(0,20)+'…' : d.title);
+
+  node.on('click', (e, d) => {
+    selected = d.id;
+    node.select('circle').attr('fill', n =>
+      n.id === selected ? '#7aa2f7' :
+      data.links.some(l => {
+        const s = typeof l.source==='object'?l.source.id:l.source;
+        const t = typeof l.target==='object'?l.target.id:l.target;
+        return (s===selected&&t===n.id)||(t===selected&&s===n.id);
+      }) ? '#9ece6a' : '#565f89'
+    );
+  }).on('dblclick', (e, d) => {
+    window.location.href = (base||'') + d.url;
+  }).on('mouseover', (e, d) => {
+    tooltip.textContent = d.title + ' (클릭: 선택 / 더블클릭: 이동)';
+    tooltip.style.display = 'block';
+  }).on('mousemove', e => {
+    const r = container.getBoundingClientRect();
+    tooltip.style.left = (e.clientX - r.left + 12) + 'px';
+    tooltip.style.top  = (e.clientY - r.top  - 10) + 'px';
+  }).on('mouseout', () => { tooltip.style.display = 'none'; });
+
+  sim.on('tick', () => {
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+})();
+</script>
