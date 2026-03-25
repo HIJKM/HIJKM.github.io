@@ -1,125 +1,44 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="dark">
+<html lang="ko" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" />
   <link rel="stylesheet" href="{{ '/assets/css/graph.css' | relative_url }}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}{% if page.url contains '/graph' %} is-graph{% endif %}">
+  <div class="ambient-orb ambient-orb-a"></div>
+  <div class="ambient-orb ambient-orb-b"></div>
 
-  <!-- 좌측 사이드바 (Chirpy 스타일) -->
-  <aside id="sidebar">
-    <div class="sidebar-brand">
-      <a href="{{ '/' | relative_url }}">
-        <span class="site-title">🌱 {{ site.title }}</span>
-        <span class="site-subtitle">{{ site.tagline }}</span>
+  <div class="site-shell">
+    <header class="site-chrome">
+      <a class="site-mark" href="{{ '/' | relative_url }}">
+        <span class="site-mark-name">{{ site.title }}</span>
+        <span class="site-mark-tag">{{ site.tagline }}</span>
       </a>
-    </div>
 
-    <nav class="sidebar-nav">
-      <ul>
-        <li><a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>
-          <i class="fa fa-home"></i> <span>홈</span>
-        </a></li>
-        <li><a href="{{ '/categories' | relative_url }}" {% if page.url contains '/categories' %}class="active"{% endif %}>
-          <i class="fa fa-folder"></i> <span>카테고리</span>
-        </a></li>
-        <li><a href="{{ '/tags' | relative_url }}" {% if page.url contains '/tags' %}class="active"{% endif %}>
-          <i class="fa fa-tags"></i> <span>태그</span>
-        </a></li>
-        <li><a href="{{ '/graph' | relative_url }}" {% if page.url contains '/graph' %}class="active"{% endif %}>
-          <i class="fa fa-project-diagram"></i> <span>지식 그래프</span>
-        </a></li>
-        <li><a href="{{ '/about' | relative_url }}" {% if page.url contains '/about' %}class="active"{% endif %}>
-          <i class="fa fa-user"></i> <span>소개</span>
-        </a></li>
-      </ul>
-    </nav>
+      <nav class="site-links" aria-label="site">
+        <a href="{{ '/graph' | relative_url }}">explore</a>
+        <a href="{{ '/tags' | relative_url }}">tags</a>
+        <a href="{{ '/categories' | relative_url }}">categories</a>
+        <a href="{{ '/about' | relative_url }}">about</a>
+      </nav>
+    </header>
 
-    <!-- 사이드바 하단 태그 클라우드 -->
-    <div class="sidebar-tags">
-      <h4>태그</h4>
-      <div class="tag-cloud">
-        {% assign all_tags = site.posts | map: "tags" | flatten | uniq %}
-        {% for tag in all_tags limit:12 %}
-          <a href="{{ '/tags#' | append: tag | relative_url }}" class="tag-pill">{{ tag }}</a>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="sidebar-footer">
-      <a href="https://github.com" target="_blank"><i class="fab fa-github"></i></a>
-    </div>
-  </aside>
-
-  <!-- 메인 콘텐츠 영역 -->
-  <main id="main-content">
-    {{ content }}
-  </main>
-
-  <!-- 우측 Obsidian 그래프 패널 -->
-  <aside id="graph-panel">
-    <div class="graph-panel-header">
-      <span><i class="fa fa-project-diagram"></i> 지식 그래프</span>
-      <button id="graph-toggle" title="그래프 토글">
-        <i class="fa fa-compress-alt"></i>
-      </button>
-    </div>
-    <div id="graph-container">
-      <svg id="knowledge-graph"></svg>
-    </div>
-    <div class="graph-legend">
-      <span class="legend-item"><span class="dot dot-current"></span> 현재 글</span>
-      <span class="legend-item"><span class="dot dot-related"></span> 연결된 글</span>
-      <span class="legend-item"><span class="dot dot-other"></span> 다른 글</span>
-    </div>
-  </aside>
-
-  <!-- 모바일 오버레이 (공유) -->
-  <div id="modal-overlay"></div>
-
-  <!-- 모바일 하단 버튼 바 -->
-  <div id="mobile-bar">
-    <button id="sidebar-toggle" aria-label="메뉴">
-      <i class="fa fa-bars"></i>
-      <span>메뉴</span>
-    </button>
-    <button id="graph-modal-toggle" aria-label="지식 그래프">
-      <i class="fa fa-project-diagram"></i>
-      <span>그래프</span>
-    </button>
+    <main id="main-content" class="content-flow">
+      {{ content }}
+    </main>
   </div>
 
-  <!-- 모바일 그래프 모달 -->
-  <div id="graph-modal">
-    <div class="modal-header">
-      <span><i class="fa fa-project-diagram"></i> 지식 그래프</span>
-      <button id="graph-modal-close"><i class="fa fa-times"></i></button>
-    </div>
-    <div id="graph-modal-container">
-      <svg id="knowledge-graph-mobile"></svg>
-    </div>
-    <div class="graph-legend">
-      <span class="legend-item"><span class="dot dot-current"></span> 현재 글</span>
-      <span class="legend-item"><span class="dot dot-related"></span> 연결된 글</span>
-      <span class="legend-item"><span class="dot dot-other"></span> 다른 글</span>
-    </div>
-  </div>
-
-  <!-- D3.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script src="{{ '/assets/js/graph.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
-
-  <!-- 현재 페이지 URL을 그래프에 전달 -->
   <script>
     window.CURRENT_PAGE = "{{ page.url }}";
     window.SITE_BASEURL = "{{ site.baseurl }}";
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="{{ '/assets/js/graph.js' | relative_url }}"></script>
 </body>
 </html>

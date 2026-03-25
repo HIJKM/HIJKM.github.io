@@ -4,111 +4,155 @@ title: "지식 그래프"
 permalink: /graph/
 ---
 
-<div class="post">
-  <header class="post-header">
-    <h1 class="post-title"><i class="fa fa-project-diagram"></i> 지식 그래프</h1>
-    <p style="color: var(--text-secondary);">모든 글의 연결 관계를 한눈에 확인하세요. 노드를 클릭하면 해당 글로 이동합니다.</p>
-  </header>
-  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; height: 600px; position: relative;">
-    <svg id="knowledge-graph-full" style="width:100%; height:100%;"></svg>
-    <div id="full-graph-tooltip" class="graph-tooltip" style="display:none;"></div>
+<section class="graph-scene">
+  <div class="graph-intro">
+    <p class="eyebrow">explore</p>
+    <h1 class="page-title">지식 그래프</h1>
+    <p class="home-description">노드를 따라 이동하며 글 사이의 연결을 읽는 공간입니다.</p>
   </div>
-  <div class="graph-legend" style="margin-top: 1rem; flex-direction: row; gap: 1.5rem;">
-    <span class="legend-item"><span class="dot dot-current"></span> 선택된 글</span>
-    <span class="legend-item"><span class="dot dot-related"></span> 연결된 글</span>
-    <span class="legend-item"><span class="dot dot-other"></span> 다른 글</span>
-  </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <div class="graph-surface">
+    <div id="graph-container-full">
+      <svg id="knowledge-graph-full"></svg>
+    </div>
+  </div>
+  <p class="graph-hint">노드를 드래그하거나 클릭해 연결을 따라갈 수 있습니다.</p>
+</section>
+
 <script>
-// Full-page graph
-(async function() {
+(async function () {
   const base = window.SITE_BASEURL || '';
   let data;
   try {
     const res = await fetch(`${base}/graph-data.json`);
     data = await res.json();
-  } catch(e) { return; }
+  } catch (e) {
+    return;
+  }
 
-  if (!data || !data.nodes.length) return;
+  if (!data || !data.nodes || !data.nodes.length || typeof d3 === 'undefined') return;
 
-  data.nodes.forEach(n => n.linkCount = 0);
+  data.nodes.forEach(n => { n.linkCount = 0; });
   data.links.forEach(l => {
-    const s = data.nodes.find(n => n.id === (typeof l.source === 'object' ? l.source.id : l.source));
-    const t = data.nodes.find(n => n.id === (typeof l.target === 'object' ? l.target.id : l.target));
-    if (s) s.linkCount++;
-    if (t) t.linkCount++;
+    const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+    const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+    const sourceNode = data.nodes.find(n => n.id === sourceId);
+    const targetNode = data.nodes.find(n => n.id === targetId);
+    if (sourceNode) sourceNode.linkCount += 1;
+    if (targetNode) targetNode.linkCount += 1;
   });
 
-  const container = document.querySelector('[style*="height: 600px"]');
+  const container = document.getElementById('graph-container-full');
   const svgEl = document.getElementById('knowledge-graph-full');
-  const w = container.clientWidth, h = 600;
+  if (!container || !svgEl) return;
 
-  const svg = d3.select(svgEl).attr('width', w).attr('height', h);
-  const g = svg.append('g');
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  const svg = d3.select(svgEl).attr('width', width).attr('height', height);
+  const root = svg.append('g').attr('class', 'graph-root');
 
-  const zoom = d3.zoom().scaleExtent([0.2, 4])
-    .on('zoom', e => g.attr('transform', e.transform));
+  const tooltip = document.createElement('div');
+  tooltip.className = 'graph-tooltip';
+  tooltip.style.display = 'none';
+  container.appendChild(tooltip);
+
+  const zoom = d3.zoom()
+    .scaleExtent([0.3, 4])
+    .on('zoom', event => root.attr('transform', event.transform));
+
   svg.call(zoom);
-  svg.call(zoom.transform, d3.zoomIdentity.translate(w/2, h/2).scale(0.7));
+  svg.call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(0.82));
 
-  const sim = d3.forceSimulation(data.nodes)
-    .force('link', d3.forceLink(data.links).id(d => d.id).distance(90).strength(0.3))
-    .force('charge', d3.forceManyBody().strength(-220).distanceMax(400))
+  const simulation = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(84).strength(0.32))
+    .force('charge', d3.forceManyBody().strength(-220).distanceMax(360))
     .force('center', d3.forceCenter(0, 0))
-    .force('collision', d3.forceCollide().radius(d => 6 + Math.min(d.linkCount||0,5)*1.5 + 10));
+    .force('collision', d3.forceCollide().radius(d => 14 + Math.min(d.linkCount || 0, 6) * 1.3));
 
-  let selected = null;
+  const link = root.append('g')
+    .selectAll('line')
+    .data(data.links)
+    .enter()
+    .append('line')
+    .attr('class', 'graph-link');
 
-  const link = g.append('g').selectAll('line').data(data.links).enter()
-    .append('line').attr('stroke', '#3b4261').attr('stroke-opacity', 0.5).attr('stroke-width', 1.5);
-
-  const tooltip = document.getElementById('full-graph-tooltip');
-
-  const node = g.append('g').selectAll('g').data(data.nodes).enter().append('g')
+  const node = root.append('g')
+    .selectAll('g')
+    .data(data.nodes)
+    .enter()
+    .append('g')
+    .attr('class', 'graph-node')
     .call(d3.drag()
-      .on('start', (e,d) => { if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-      .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
-      .on('end', (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+      .on('start', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on('drag', (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on('end', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }));
 
   node.append('circle')
-    .attr('r', d => 6 + Math.min(d.linkCount||0,5)*1.5)
-    .attr('fill', '#7aa2f7').attr('opacity', 0.85)
-    .attr('stroke', '#1a1b26').attr('stroke-width', 1.5);
+    .attr('r', d => 4.8 + Math.min(d.linkCount || 0, 6) * 1.1)
+    .attr('fill', 'var(--accent)');
 
   node.append('text')
-    .attr('dx', d => 8 + Math.min(d.linkCount||0,5)*1.5)
+    .attr('dx', d => 9 + Math.min(d.linkCount || 0, 6))
     .attr('dy', '0.35em')
-    .attr('font-size', 11)
-    .attr('fill', '#a9b1d6')
-    .attr('font-family', 'Noto Sans KR, sans-serif')
-    .text(d => d.title.length > 20 ? d.title.slice(0,20)+'…' : d.title);
+    .text(d => d.title.length > 18 ? `${d.title.slice(0, 18)}…` : d.title);
 
-  node.on('click', (e, d) => {
-    selected = d.id;
-    node.select('circle').attr('fill', n =>
-      n.id === selected ? '#7aa2f7' :
-      data.links.some(l => {
-        const s = typeof l.source==='object'?l.source.id:l.source;
-        const t = typeof l.target==='object'?l.target.id:l.target;
-        return (s===selected&&t===n.id)||(t===selected&&s===n.id);
-      }) ? '#9ece6a' : '#565f89'
-    );
-  }).on('dblclick', (e, d) => {
-    window.location.href = (base||'') + d.url;
-  }).on('mouseover', (e, d) => {
-    tooltip.textContent = d.title + ' (클릭: 선택 / 더블클릭: 이동)';
-    tooltip.style.display = 'block';
-  }).on('mousemove', e => {
-    const r = container.getBoundingClientRect();
-    tooltip.style.left = (e.clientX - r.left + 12) + 'px';
-    tooltip.style.top  = (e.clientY - r.top  - 10) + 'px';
-  }).on('mouseout', () => { tooltip.style.display = 'none'; });
+  node
+    .on('mouseover', function (event, d) {
+      const connectedIds = new Set([d.id]);
+      data.links.forEach(l => {
+        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+        if (sourceId === d.id) connectedIds.add(targetId);
+        if (targetId === d.id) connectedIds.add(sourceId);
+      });
 
-  sim.on('tick', () => {
-    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+      node.classed('dimmed', n => !connectedIds.has(n.id));
+      link.classed('dimmed', l => {
+        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+        return sourceId !== d.id && targetId !== d.id;
+      });
+      link.classed('highlighted', l => {
+        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+        return sourceId === d.id || targetId === d.id;
+      });
+
+      tooltip.textContent = d.title;
+      tooltip.style.display = 'block';
+    })
+    .on('mousemove', function (event) {
+      const rect = container.getBoundingClientRect();
+      tooltip.style.left = `${event.clientX - rect.left + 14}px`;
+      tooltip.style.top = `${event.clientY - rect.top - 8}px`;
+    })
+    .on('mouseout', function () {
+      node.classed('dimmed', false);
+      link.classed('dimmed', false).classed('highlighted', false);
+      tooltip.style.display = 'none';
+    })
+    .on('click', function (event, d) {
+      if (d.url) window.location.href = `${base}${d.url}`;
+    });
+
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+
     node.attr('transform', d => `translate(${d.x},${d.y})`);
   });
 })();

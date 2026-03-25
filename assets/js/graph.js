@@ -214,9 +214,9 @@
       ctrl = document.createElement('div');
       ctrl.className = 'graph-controls';
       ctrl.innerHTML = `
-        <button class="graph-btn" data-action="zoom-in" title="확대"><i class="fa fa-plus"></i></button>
-        <button class="graph-btn" data-action="zoom-out" title="축소"><i class="fa fa-minus"></i></button>
-        <button class="graph-btn" data-action="reset" title="초기화"><i class="fa fa-crosshairs"></i></button>
+        <button class="graph-btn" data-action="zoom-in" title="확대">+</button>
+        <button class="graph-btn" data-action="zoom-out" title="축소">-</button>
+        <button class="graph-btn" data-action="reset" title="초기화">o</button>
       `;
       container.appendChild(ctrl);
     }
