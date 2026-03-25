@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}{% if page.url contains '/graph' %} is-graph{% endif %}">
+<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}">
   <div class="ambient-orb ambient-orb-a"></div>
   <div class="ambient-orb ambient-orb-b"></div>
 
@@ -22,7 +22,7 @@
       </a>
 
       <nav class="site-links" aria-label="site">
-        <a href="{{ '/graph' | relative_url }}" class="btn-explore">explore</a>
+        <button id="explore-btn" class="btn-explore" aria-haspopup="dialog">explore</button>
       </nav>
     </header>
 
@@ -31,11 +31,27 @@
     </main>
   </div>
 
+  <!-- 그래프 모달 -->
+  <div id="graph-modal" class="graph-modal" role="dialog" aria-modal="true" aria-label="지식 그래프">
+    <div class="graph-modal-backdrop"></div>
+    <div class="graph-modal-panel">
+      <header class="graph-modal-header">
+        <span class="graph-modal-title">knowledge graph</span>
+        <button id="graph-modal-close" class="graph-modal-close" aria-label="닫기">✕</button>
+      </header>
+      <div id="graph-modal-container" class="graph-modal-body">
+        <svg id="knowledge-graph-modal"></svg>
+      </div>
+      <p class="graph-modal-hint">노드를 클릭해 글로 이동 · 드래그로 탐색</p>
+    </div>
+  </div>
+
   <script>
     window.CURRENT_PAGE = "{{ page.url }}";
     window.SITE_BASEURL = "{{ site.baseurl }}";
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="{{ '/assets/js/graph.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </body>
 </html>
