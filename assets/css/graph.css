@@ -2,10 +2,18 @@
    Obsidian-style Graph Panel
    ============================================ */
 
+/* 기본: 숨김 (모바일 우선) */
 #graph-panel {
-  display: flex;
+  display: none;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* 1200px 이상 화면에서만 표시 */
+@media (min-width: 1200px) {
+  #graph-panel {
+    display: flex;
+  }
 }
 
 .graph-panel-header {
