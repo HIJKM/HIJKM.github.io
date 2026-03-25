@@ -505,45 +505,248 @@ a:hover { color: var(--accent-hover); }
 /* ============================================
    Mobile
    ============================================ */
-#sidebar-toggle {
+/* sidebar-toggle은 mobile-bar 안에 있으므로 mobile-bar의 display로 제어됨 */
+
+/* ============================================
+   Mobile Bottom Bar & Modals
+   ============================================ */
+
+/* 모바일 하단 버튼 바 */
+#mobile-bar {
   display: none;
   position: fixed;
-  bottom: 1.5rem;
-  left: 1rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
   z-index: 200;
-  background: var(--accent);
-  color: var(--bg-primary);
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: var(--shadow);
+  flex-direction: row;
+  align-items: stretch;
 }
 
-#sidebar-overlay {
+#mobile-bar button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+  padding: 0.5rem;
+}
+
+#mobile-bar button i { font-size: 1.1rem; }
+
+#mobile-bar button:hover,
+#mobile-bar button.active {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
+
+/* 공용 오버레이 */
+#modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 99;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 299;
+  backdrop-filter: blur(2px);
+}
+#modal-overlay.show { display: block; }
+
+/* 사이드바 — 모바일에서 모달처럼 */
+/* 그래프 모달 */
+#graph-modal {
+  display: none;
+  position: fixed;
+  bottom: 58px;
+  left: 0;
+  right: 0;
+  height: 70vh;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  z-index: 300;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+}
+#graph-modal.show { display: flex; }
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.modal-header i { color: var(--accent); margin-right: 0.4rem; }
+
+#graph-modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#graph-modal-container {
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg-primary);
+  position: relative;
+}
+
+#knowledge-graph-mobile {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   Responsive — Tablet & Mobile
+   ============================================ */
+
+/* 태블릿: 그래프 패널 숨김 */
 @media (max-width: 1200px) {
   #graph-panel { display: none; }
   #main-content { margin-right: 0; }
 }
 
+/* 태블릿 중간 */
+@media (max-width: 1024px) {
+  #main-content {
+    padding: 2rem 2rem;
+  }
+}
+
+/* 모바일 */
 @media (max-width: 768px) {
+  /* 하단 버튼 바 표시 */
+  #mobile-bar { display: flex; }
+
+  /* 사이드바 모달 */
   #sidebar {
     transform: translateX(-100%);
+    width: 80vw;
+    max-width: 300px;
+    box-shadow: var(--shadow);
+    z-index: 300;
   }
   #sidebar.open {
     transform: translateX(0);
+    animation: slideRight 0.25s ease;
   }
-  #sidebar-toggle { display: flex; align-items: center; justify-content: center; }
-  #main-content { margin-left: 0; padding: 1.25rem; }
-  #sidebar-overlay.show { display: block; }
-  .post-title { font-size: 1.5rem; }
+
+  /* 메인 콘텐츠 전체 폭, 하단 바 공간 확보 */
+  #main-content {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 1rem 1.1rem 5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 그래프 패널 숨김 (모달로 대체) */
+  #graph-panel { display: none; }
+
+  /* 타이포그래피 */
+  .post-title { font-size: 1.4rem; line-height: 1.35; }
+  .post-content { font-size: 0.92rem; }
+  .post-content h2 { font-size: 1.25rem; }
+  .post-content h3 { font-size: 1.05rem; }
+
+  /* 홈 카드 */
+  .home-header h1 { font-size: 1.4rem; }
+  .post-card { padding: 1.1rem; }
+  .post-card h2 { font-size: 1rem; }
+
+  /* 포스트 메타 */
+  .post-meta {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  /* 이전/다음 글 버튼 */
+  .post-nav {
+    flex-direction: column;
+  }
+  .prev-post, .next-post {
+    max-width: 100%;
+    font-size: 0.82rem;
+  }
+  .next-post { margin-left: 0; }
+
+  /* 코드 블록 */
+  .post-content pre {
+    padding: 0.9rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+  }
+
+  /* 테이블 */
+  .post-content table {
+    font-size: 0.78rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* TOC */
+  .toc-wrapper { padding: 0.75rem 1rem; }
+
+  /* 태그 */
+  .post-tags { gap: 0.3rem; }
+  .tag-pill { font-size: 0.72rem; padding: 0.15rem 0.5rem; }
+
+  /* 관련 글 */
+  .related-posts li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+}
+
+/* 소형 모바일 (iPhone SE 등) */
+@media (max-width: 375px) {
+  #main-content { padding: 0.85rem 0.9rem 4rem; }
+  .post-title { font-size: 1.25rem; }
+  .post-card { padding: 0.9rem; }
+  .post-card h2 { font-size: 0.95rem; }
+  .post-content { font-size: 0.88rem; }
+  .post-content pre { font-size: 0.75rem; }
+}
+
+/* 가로 모드 */
+@media (max-width: 900px) and (orientation: landscape) {
+  #sidebar { width: 220px; }
+  #main-content { padding: 1rem 1.5rem; }
 }
