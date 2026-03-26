@@ -481,22 +481,62 @@ img { max-width: 100%; display: block; }
    Comments
    ============================================================ */
 .comments-block {
-  margin-top: 3rem;
+  margin-top: 3.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--line);
 }
 
-.comments-title {
-  font-family: var(--font-sans);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0 0 1rem;
+.comments-header {
+  margin-bottom: 1.25rem;
 }
 
-.comments-placeholder {
+.comments-count {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.comments-compose {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: text;
+  transition: border-color 140ms ease;
+}
+
+.comments-compose:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+.comments-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.comments-input-fake {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--ink-faint);
+  flex: 1;
+}
+
+.comments-empty {
+  margin-top: 1.5rem;
+  padding: 1.75rem 0;
+  text-align: center;
+}
+
+.comments-empty p {
+  font-family: var(--font-sans);
   font-size: 0.9rem;
-  color: var(--ink-muted);
+  color: var(--ink-faint);
   margin: 0;
 }
 

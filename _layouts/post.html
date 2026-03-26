@@ -11,7 +11,7 @@ layout: default
     {% endif %}
 
     <div class="post-meta">
-      <span>{{ page.date | date: "%Y.%m.%d" }}</span>
+      <span>{{ page.date | date: "%b %-d, %Y" }}</span>
       <span>
         {% assign words = page.content | number_of_words %}
         {% assign minutes = words | divided_by: 200 %}
@@ -29,16 +29,16 @@ layout: default
     {{ content }}
   </div>
 
-  <section class="comments-block" aria-labelledby="comments-title">
-    <h2 id="comments-title" class="comments-title">comments</h2>
-    <div class="comments-embed">
-      {% if site.comments and site.comments.active %}
-        <div id="giscus_thread"></div>
-      {% else %}
-        <p class="comments-placeholder">
-          GitHub Discussions 기반 댓글 영역을 여기에 연결할 수 있습니다. 이후 `giscus` 또는 익명 댓글 백엔드로 교체 가능합니다.
-        </p>
-      {% endif %}
+  <section class="comments-block">
+    <div class="comments-header">
+      <span class="comments-count">0 responses</span>
+    </div>
+    <div class="comments-compose">
+      <div class="comments-avatar"></div>
+      <div class="comments-input-fake">What are your thoughts?</div>
+    </div>
+    <div class="comments-empty">
+      <p>Be the first to respond.</p>
     </div>
   </section>
 </article>
