@@ -313,6 +313,7 @@ img {
   color: var(--ink);
 }
 
+/* 인라인 코드 */
 .post-content code {
   font-family: var(--font-mono);
   font-size: 0.875em;
@@ -324,23 +325,52 @@ img {
   white-space: nowrap;
 }
 
+/* 코드 블록 wrapper (Rouge .highlight) */
+.post-content .highlight,
 .post-content pre {
   overflow-x: auto;
-  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  padding: 0;
   background: #f0ebe0;
   border-radius: 0.75rem;
   border: 1px solid rgba(35, 29, 26, 0.1);
-  line-height: 1.65;
-  margin: 1.5rem 0;
 }
 
-.post-content pre code {
+/* highlight 내부 table 레이아웃 초기화 */
+.post-content .highlight table,
+.post-content .highlight tbody,
+.post-content .highlight tr,
+.post-content .highlight td {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+/* 실제 코드 영역 */
+.post-content .highlight pre,
+.post-content pre {
+  padding: 1.25rem 1.5rem;
+  margin: 0;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
+  line-height: 1.65;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.post-content pre code,
+.post-content .highlight code {
+  font-size: inherit;
   padding: 0;
   background: transparent;
   border: none;
-  white-space: pre;
   color: var(--ink);
+  white-space: pre;
 }
 
 .post-content blockquote {
