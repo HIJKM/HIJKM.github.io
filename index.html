@@ -3,22 +3,6 @@ layout: default
 title: Home
 ---
 
-<div class="heatmap-wrap">
-  <div class="heatmap-header">
-    <span class="heatmap-label">posting activity</span>
-  </div>
-  <div class="heatmap-body">
-    <div class="heatmap-days">
-      <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
-    </div>
-    <div class="heatmap-cols">
-      <div class="heatmap-months" id="heatmap-months"></div>
-      <div class="heatmap-grid" id="heatmap-grid"></div>
-    </div>
-  </div>
-  <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
-</div>
-
 <div class="home-bar">
   <span class="home-stat">
     <span class="home-stat-num">{{ site.posts.size }}</span>
@@ -39,6 +23,27 @@ title: Home
     explore graph
   </button>
 </div>
+
+<details class="heatmap-section" id="heatmap-section">
+  <summary class="heatmap-summary">
+    <span class="heatmap-label">posting activity</span>
+    <svg class="heatmap-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </summary>
+  <div class="heatmap-inner" id="heatmap-inner">
+    <div class="heatmap-body">
+      <div class="heatmap-days">
+        <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+      </div>
+      <div class="heatmap-cols">
+        <div class="heatmap-months" id="heatmap-months"></div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+    </div>
+    <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
+  </div>
+</details>
 
 <section class="post-list" aria-label="posts">
   {% for post in site.posts %}

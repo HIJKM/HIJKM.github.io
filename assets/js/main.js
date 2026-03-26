@@ -98,81 +98,87 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   /* ══════════════════════════════════════
-     Activity Heatmap
+     Activity Heatmap (lazy, fit-to-width)
      ══════════════════════════════════════ */
-  const heatmapGrid = document.getElementById('heatmap-grid');
+  const heatmapSection = document.getElementById('heatmap-section');
+  let heatmapInited    = false;
 
-  if (heatmapGrid) {
-    const base = window.SITE_BASEURL || '';
-    fetch(`${base}/graph-data.json`)
-      .then(r => r.json())
-      .then(data => renderHeatmap(data.nodes || []))
-      .catch(() => {});
+  if (heatmapSection) {
+    heatmapSection.addEventListener('toggle', () => {
+      if (heatmapSection.open && !heatmapInited) {
+        heatmapInited = true;
+        const base = window.SITE_BASEURL || '';
+        fetch(`${base}/graph-data.json`)
+          .then(r => r.json())
+          .then(data => renderHeatmap(data.nodes || []))
+          .catch(() => renderHeatmap([]));
+      }
+    });
   }
 
   function renderHeatmap(nodes) {
-    const grid      = document.getElementById('heatmap-grid');
-    const monthsEl  = document.getElementById('heatmap-months');
-    const tooltip   = document.getElementById('heatmap-tooltip');
+    const grid     = document.getElementById('heatmap-grid');
+    const monthsEl = document.getElementById('heatmap-months');
+    const tooltip  = document.getElementById('heatmap-tooltip');
     if (!grid) return;
 
-    // 날짜 → 글 수 맵
+    // 컨테이너 너비 기반 셀 크기 계산 (26주 = 약 6개월)
+    const WEEKS    = 26;
+    const CELL_GAP = 2;
+    const DAY_W    = 28; // .heatmap-days 너비 + gap
+    const colsEl   = document.querySelector('.heatmap-cols');
+    const availW   = colsEl ? colsEl.clientWidth : (grid.parentElement?.clientWidth || 600);
+    const cellSize = Math.max(10, Math.floor((availW - (WEEKS - 1) * CELL_GAP) / WEEKS));
+
+    document.documentElement.style.setProperty('--hm-cell', cellSize + 'px');
+
+    const CELL_STEP = cellSize + CELL_GAP;
+    const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // 날짜 맵
     const dateMap = {};
-    nodes.forEach(n => {
-      if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + 1;
-    });
+    nodes.forEach(n => { if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + 1; });
 
-    // 52주 전 일요일부터 오늘까지
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // WEEKS 주 전 일요일부터 오늘
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const start = new Date(today);
-    start.setDate(start.getDate() - 52 * 7 + 1);
-    start.setDate(start.getDate() - start.getDay()); // 일요일로 맞춤
+    start.setDate(start.getDate() - WEEKS * 7 + 1);
+    start.setDate(start.getDate() - start.getDay());
 
-    const CELL = 13; // cell(11) + gap(2)
-    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    let lastMonth = -1;
-    let colIndex  = 0;
-
+    let lastMonth = -1, colIndex = 0;
     const cur = new Date(start);
-    const cells = [];
+
     while (cur <= today) {
       const key = cur.toISOString().slice(0, 10);
-      cells.push({ date: key, count: dateMap[key] || 0, dow: cur.getDay() });
+      const count = dateMap[key] || 0;
 
-      // 월 레이블 (주 시작마다 체크)
+      // 월 레이블
       if (cur.getDay() === 0 && monthsEl) {
         const m = cur.getMonth();
         if (m !== lastMonth) {
           const span = document.createElement('span');
           span.textContent = MONTHS[m];
-          span.style.left = (colIndex * CELL) + 'px';
+          span.style.left = (colIndex * CELL_STEP) + 'px';
           monthsEl.appendChild(span);
           lastMonth = m;
         }
         colIndex++;
       }
 
+      const el = document.createElement('div');
+      el.className    = 'hm-cell';
+      el.dataset.date  = key;
+      el.dataset.count = count;
+      if (count > 0) el.classList.add(count >= 4 ? 'hm-l4' : count === 3 ? 'hm-l3' : count === 2 ? 'hm-l2' : 'hm-l1');
+      grid.appendChild(el);
+
       cur.setDate(cur.getDate() + 1);
     }
-
-    // 셀 렌더링
-    cells.forEach(cell => {
-      const el = document.createElement('div');
-      el.className = 'hm-cell';
-      el.dataset.date  = cell.date;
-      el.dataset.count = cell.count;
-      if (cell.count > 0) {
-        el.classList.add(cell.count >= 4 ? 'hm-l4' : cell.count === 3 ? 'hm-l3' : cell.count === 2 ? 'hm-l2' : 'hm-l1');
-      }
-      grid.appendChild(el);
-    });
 
     // 툴팁
     if (tooltip) {
       grid.addEventListener('mouseover', e => {
-        const c = e.target.closest('.hm-cell');
-        if (!c) return;
+        const c = e.target.closest('.hm-cell'); if (!c) return;
         const n = Number(c.dataset.count);
         tooltip.textContent = `${c.dataset.date}  ·  ${n === 0 ? 'no posts' : n === 1 ? '1 post' : n + ' posts'}`;
         tooltip.style.display = 'block';
