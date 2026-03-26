@@ -207,7 +207,7 @@ img { max-width: 100%; display: block; }
 .reading-surface {
   width: min(100%, var(--content-w));
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 5rem;
+  padding: 2.5rem 1.5rem 5rem 3.5rem;
 }
 
 .post-header {
@@ -367,6 +367,30 @@ img { max-width: 100%; display: block; }
   border: none;
   color: var(--ink);
   white-space: pre;
+}
+
+/* 헤딩 좌측 레이블 (H1 / H2 / H3) */
+.post-content h1[data-heading],
+.post-content h2[data-heading],
+.post-content h3[data-heading] {
+  position: relative;
+}
+
+.post-content h1[data-heading]::before,
+.post-content h2[data-heading]::before,
+.post-content h3[data-heading]::before {
+  content: attr(data-heading);
+  position: absolute;
+  left: -2.8rem;
+  top: 0.2em;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.18);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
 }
 
 /* 인용 */
@@ -1073,6 +1097,9 @@ img { max-width: 100%; display: block; }
   .home-bar    { padding: 1.25rem 0; }
   .home-stat-num { font-size: 1.4rem; }
   .reading-surface { padding: 2rem 1rem 4rem; }
+  .post-content h1[data-heading]::before,
+  .post-content h2[data-heading]::before,
+  .post-content h3[data-heading]::before { display: none; }
   .page-copy    { padding: 2rem 1rem 4rem; }
   .graph-scene  { padding: 2rem 1rem; }
 
