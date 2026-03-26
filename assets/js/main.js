@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const heatmapInner   = document.getElementById('heatmap-inner');
   const heatmapSummary = heatmapSection?.querySelector('.heatmap-summary');
   let heatmapInited    = false;
+  let heatmapAnimating = false;   // 애니메이션 진행 중 재클릭 방지
 
   /* 미니 히트맵 (접힌 요약줄) */
   if (miniEl) {
@@ -149,52 +150,59 @@ document.addEventListener('DOMContentLoaded', function () {
   if (heatmapSummary) {
     heatmapSummary.addEventListener('click', e => {
       e.preventDefault();
+      if (heatmapAnimating) return;
       heatmapSection.open ? collapseHeatmap() : expandHeatmap();
     });
   }
 
   function expandHeatmap() {
-    /* ① 미니 셀들을 날려 보낸다 (왼→오 순서) */
+    heatmapAnimating = true;
+
+    /* ① 미니 셀 전부 사라질 때까지 기다린다 */
     const miniCells = [...document.querySelectorAll('.hm-mini-cell')];
     miniCells.forEach((c, i) => {
-      c.style.transition = `transform 200ms ${i * 20}ms ease, opacity 200ms ${i * 20}ms ease`;
-      c.style.transform  = 'scale(1.9) translateY(-4px)';
+      c.style.transition = `transform 160ms ${i * 18}ms ease, opacity 160ms ${i * 18}ms ease`;
+      c.style.transform  = 'scale(1.6) translateY(-3px)';
       c.style.opacity    = '0';
     });
+    const miniWait = miniCells.length ? 160 + (miniCells.length - 1) * 18 + 20 : 0;
 
-    /* ② details 열기 + inner 슬라이드 준비 */
-    heatmapSection.setAttribute('open', '');
-    if (heatmapInner) {
-      heatmapInner.style.height   = '0';
-      heatmapInner.style.overflow = 'hidden';
-      heatmapInner.style.opacity  = '1';
-    }
+    /* ② 미니 셀 완료 후 → details 열기 + 슬라이드 */
+    setTimeout(() => {
+      heatmapSection.setAttribute('open', '');
+      if (heatmapInner) {
+        heatmapInner.style.height   = '0';
+        heatmapInner.style.overflow = 'hidden';
+        heatmapInner.style.opacity  = '1';
+      }
 
-    const doSlide = () => {
-      if (!heatmapInner) return;
-      const targetH = heatmapInner.scrollHeight;
-      requestAnimationFrame(() => {
-        heatmapInner.style.transition = 'height 360ms cubic-bezier(0.4,0,0.2,1)';
-        heatmapInner.style.height     = targetH + 'px';
-        heatmapInner.addEventListener('transitionend', () => {
-          heatmapInner.style.cssText = '';  // inline 전부 해제
-          staggerColumnsIn();
-        }, { once: true });
-      });
-    };
+      const doSlide = () => {
+        if (!heatmapInner) return;
+        const targetH = heatmapInner.scrollHeight;
+        requestAnimationFrame(() => {
+          heatmapInner.style.transition = 'height 340ms cubic-bezier(0.4,0,0.2,1)';
+          heatmapInner.style.height     = targetH + 'px';
+          heatmapInner.addEventListener('transitionend', () => {
+            heatmapInner.style.cssText = '';
+            staggerColumnsIn();
+          }, { once: true });
+        });
+      };
 
-    /* ③ 데이터 lazy 로드 후 슬라이드 */
-    if (!heatmapInited) {
-      heatmapInited = true;
-      fetchGraphData()
-        .then(d => { renderHeatmap(d.nodes || []); doSlide(); })
-        .catch(() => { renderHeatmap([]); doSlide(); });
-    } else {
-      requestAnimationFrame(doSlide);
-    }
+      if (!heatmapInited) {
+        heatmapInited = true;
+        fetchGraphData()
+          .then(d => { renderHeatmap(d.nodes || []); doSlide(); })
+          .catch(() => { renderHeatmap([]); doSlide(); });
+      } else {
+        requestAnimationFrame(doSlide);
+      }
+    }, miniWait);
   }
 
   function collapseHeatmap() {
+    heatmapAnimating = true;
+
     /* ① 컬럼들을 오→왼 순서로 stagger out */
     const cells    = [...document.querySelectorAll('.hm-cell')];
     const colCount = cells.length ? Math.ceil(cells.length / 7) : 0;
@@ -229,6 +237,9 @@ document.addEventListener('DOMContentLoaded', function () {
               c.style.transform  = '';
               c.style.opacity    = '';
             });
+            // 마지막 미니 셀 bounce 끝나면 플래그 해제
+            const totalDuration = minis.length * 28 + 280;
+            setTimeout(() => { heatmapAnimating = false; }, totalDuration);
           });
         }, { once: true });
       });
@@ -237,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function staggerColumnsIn() {
     const cells = [...document.querySelectorAll('.hm-cell')];
+    const colCount = cells.length ? Math.ceil(cells.length / 7) : 0;
     /* 먼저 모두 숨김 */
     cells.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateY(-6px)'; c.style.transition = 'none'; });
     requestAnimationFrame(() => {
@@ -246,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function () {
         c.style.opacity    = '1';
         c.style.transform  = '';
       });
+      // 마지막 컬럼 애니메이션 끝나면 플래그 해제
+      const totalDuration = colCount * 12 + 220;
+      setTimeout(() => { heatmapAnimating = false; }, totalDuration);
     });
   }
 
