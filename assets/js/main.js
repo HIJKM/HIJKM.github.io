@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function () {
   exploreBtn?.addEventListener('click', openModal);
   closeBtn?.addEventListener('click', closeModal);
   backdrop?.addEventListener('click', closeModal);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeSearch(); } });
 
   /* ══════════════════════════════════════
      Inline header search
@@ -63,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function openSearch() {
     headerSearch?.classList.add('is-open');
-    setTimeout(() => searchInput?.focus(), 50); // after width transition starts
+    searchInput?.focus();       // 동기 호출 → 모바일 키보드 즉시 팝업
     loadPosts();
   }
 
@@ -71,8 +70,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!headerSearch?.classList.contains('is-open')) return;
     headerSearch.classList.remove('is-open');
     searchDropdown?.classList.remove('is-open');
-    if (searchInput)  searchInput.value = '';
+    if (searchInput)   searchInput.value = '';
     if (searchResults) searchResults.innerHTML = '';
+    searchInput?.blur();
   }
 
   searchBtn?.addEventListener('click', e => {
@@ -80,7 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
     headerSearch?.classList.contains('is-open') ? closeSearch() : openSearch();
   });
 
-  document.addEventListener('click', e => {
+  // pointerdown = 모바일에서 click보다 빠르게 반응
+  document.addEventListener('pointerdown', e => {
     if (headerSearch && !headerSearch.contains(e.target) &&
         searchDropdown && !searchDropdown.contains(e.target)) closeSearch();
   });
@@ -112,13 +113,18 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   /* ══════════════════════════════════════
-     Activity Heatmap (lazy, fit-to-width)
+     Activity Heatmap — animated expand/collapse
      ══════════════════════════════════════ */
-  /* 미니 히트맵 (접힌 상태 summary에 최근 10일) */
-  const miniEl = document.getElementById('heatmap-mini');
+  const miniEl         = document.getElementById('heatmap-mini');
+  const heatmapSection = document.getElementById('heatmap-section');
+  const heatmapInner   = document.getElementById('heatmap-inner');
+  const heatmapSummary = heatmapSection?.querySelector('.heatmap-summary');
+  let heatmapInited    = false;
+
+  /* 미니 히트맵 (접힌 요약줄) */
   if (miniEl) {
     fetchGraphData()
-      .then(data => renderMiniHeatmap(data.nodes || []))
+      .then(d => renderMiniHeatmap(d.nodes || []))
       .catch(() => renderMiniHeatmap([]));
   }
 
@@ -139,18 +145,107 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* 전체 히트맵 (펼칠 때 lazy 로드) */
-  const heatmapSection = document.getElementById('heatmap-section');
-  let heatmapInited    = false;
+  /* summary 클릭 → 커스텀 애니메이션으로 처리 */
+  if (heatmapSummary) {
+    heatmapSummary.addEventListener('click', e => {
+      e.preventDefault();
+      heatmapSection.open ? collapseHeatmap() : expandHeatmap();
+    });
+  }
 
-  if (heatmapSection) {
-    heatmapSection.addEventListener('toggle', () => {
-      if (heatmapSection.open && !heatmapInited) {
-        heatmapInited = true;
-        fetchGraphData()
-          .then(data => renderHeatmap(data.nodes || []))
-          .catch(() => renderHeatmap([]));
-      }
+  function expandHeatmap() {
+    /* ① 미니 셀들을 날려 보낸다 (왼→오 순서) */
+    const miniCells = [...document.querySelectorAll('.hm-mini-cell')];
+    miniCells.forEach((c, i) => {
+      c.style.transition = `transform 200ms ${i * 20}ms ease, opacity 200ms ${i * 20}ms ease`;
+      c.style.transform  = 'scale(1.9) translateY(-4px)';
+      c.style.opacity    = '0';
+    });
+
+    /* ② details 열기 + inner 슬라이드 준비 */
+    heatmapSection.setAttribute('open', '');
+    if (heatmapInner) {
+      heatmapInner.style.height   = '0';
+      heatmapInner.style.overflow = 'hidden';
+      heatmapInner.style.opacity  = '1';
+    }
+
+    const doSlide = () => {
+      if (!heatmapInner) return;
+      const targetH = heatmapInner.scrollHeight;
+      requestAnimationFrame(() => {
+        heatmapInner.style.transition = 'height 360ms cubic-bezier(0.4,0,0.2,1)';
+        heatmapInner.style.height     = targetH + 'px';
+        heatmapInner.addEventListener('transitionend', () => {
+          heatmapInner.style.cssText = '';  // inline 전부 해제
+          staggerColumnsIn();
+        }, { once: true });
+      });
+    };
+
+    /* ③ 데이터 lazy 로드 후 슬라이드 */
+    if (!heatmapInited) {
+      heatmapInited = true;
+      fetchGraphData()
+        .then(d => { renderHeatmap(d.nodes || []); doSlide(); })
+        .catch(() => { renderHeatmap([]); doSlide(); });
+    } else {
+      requestAnimationFrame(doSlide);
+    }
+  }
+
+  function collapseHeatmap() {
+    /* ① 컬럼들을 오→왼 순서로 stagger out */
+    const cells    = [...document.querySelectorAll('.hm-cell')];
+    const colCount = cells.length ? Math.ceil(cells.length / 7) : 0;
+    cells.forEach((c, i) => {
+      const col   = Math.floor(i / 7);
+      const delay = (colCount - 1 - col) * 8;
+      c.style.transition = `opacity 140ms ${delay}ms ease, transform 140ms ${delay}ms ease`;
+      c.style.opacity    = '0';
+      c.style.transform  = 'translateY(-3px)';
+    });
+
+    /* ② 셀 애니메이션 끝나면 inner 슬라이드 업 */
+    const waitMs = colCount * 8 + 160;
+    setTimeout(() => {
+      if (!heatmapInner) { heatmapSection.open = false; return; }
+      heatmapInner.style.height   = heatmapInner.offsetHeight + 'px';
+      heatmapInner.style.overflow = 'hidden';
+      requestAnimationFrame(() => {
+        heatmapInner.style.transition = 'height 300ms cubic-bezier(0.4,0,0.2,1)';
+        heatmapInner.style.height     = '0';
+        heatmapInner.addEventListener('transitionend', () => {
+          /* ③ details 닫기 */
+          heatmapSection.removeAttribute('open');
+          heatmapInner.style.cssText = '';
+          /* ④ 미니 셀들이 스프링처럼 돌아온다 */
+          const minis = [...document.querySelectorAll('.hm-mini-cell')];
+          minis.forEach(c => { c.style.transition = 'none'; c.style.transform = 'scale(0)'; c.style.opacity = '0'; });
+          requestAnimationFrame(() => {
+            minis.forEach((c, i) => {
+              c.style.transition = `transform 280ms ${i * 28}ms cubic-bezier(0.34,1.56,0.64,1),
+                                    opacity    180ms ${i * 28}ms ease`;
+              c.style.transform  = '';
+              c.style.opacity    = '';
+            });
+          });
+        }, { once: true });
+      });
+    }, waitMs);
+  }
+
+  function staggerColumnsIn() {
+    const cells = [...document.querySelectorAll('.hm-cell')];
+    /* 먼저 모두 숨김 */
+    cells.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateY(-6px)'; c.style.transition = 'none'; });
+    requestAnimationFrame(() => {
+      cells.forEach((c, i) => {
+        const col = Math.floor(i / 7);
+        c.style.transition = `opacity 220ms ${col * 12}ms ease, transform 220ms ${col * 12}ms ease`;
+        c.style.opacity    = '1';
+        c.style.transform  = '';
+      });
     });
   }
 
@@ -160,77 +255,83 @@ document.addEventListener('DOMContentLoaded', function () {
     const tooltip  = document.getElementById('heatmap-tooltip');
     if (!grid) return;
 
-    // 컨테이너 너비 기반 셀 크기 계산 (26주 = 약 6개월)
-    const WEEKS    = 26;
-    const CELL_GAP = 2;
-    const DAY_W    = 28; // .heatmap-days 너비 + gap
+    const WEEKS = 26, CELL_GAP = 2;
     const colsEl   = document.querySelector('.heatmap-cols');
-    const availW   = colsEl ? colsEl.clientWidth : (grid.parentElement?.clientWidth || 600);
+    const availW   = colsEl ? colsEl.clientWidth : 600;
     const cellSize = Math.max(10, Math.floor((availW - (WEEKS - 1) * CELL_GAP) / WEEKS));
-
     document.documentElement.style.setProperty('--hm-cell', cellSize + 'px');
 
     const CELL_STEP = cellSize + CELL_GAP;
     const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    // 날짜 맵
-    const dateMap = {};
+    const dateMap   = {};
     nodes.forEach(n => { if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + 1; });
 
-    // WEEKS 주 전 일요일부터 오늘
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const start = new Date(today);
-    start.setDate(start.getDate() - WEEKS * 7 + 1);
-    start.setDate(start.getDate() - start.getDay());
+    start.setDate(start.getDate() - WEEKS * 7 + 1 - start.getDay());
 
     let lastMonth = -1, colIndex = 0;
     const cur = new Date(start);
-
     while (cur <= today) {
       const key = cur.toISOString().slice(0, 10);
       const count = dateMap[key] || 0;
-
-      // 월 레이블
       if (cur.getDay() === 0 && monthsEl) {
         const m = cur.getMonth();
         if (m !== lastMonth) {
           const span = document.createElement('span');
           span.textContent = MONTHS[m];
-          span.style.left = (colIndex * CELL_STEP) + 'px';
+          span.style.left  = (colIndex * CELL_STEP) + 'px';
           monthsEl.appendChild(span);
           lastMonth = m;
         }
         colIndex++;
       }
-
       const el = document.createElement('div');
-      el.className    = 'hm-cell';
+      el.className     = 'hm-cell';
       el.dataset.date  = key;
       el.dataset.count = count;
       if (count > 0) el.classList.add(count >= 4 ? 'hm-l4' : count === 3 ? 'hm-l3' : count === 2 ? 'hm-l2' : 'hm-l1');
       grid.appendChild(el);
-
       cur.setDate(cur.getDate() + 1);
     }
 
-    // 툴팁
+    /* 툴팁 */
     if (tooltip) {
       grid.addEventListener('mouseover', e => {
         const c = e.target.closest('.hm-cell'); if (!c) return;
         const n = Number(c.dataset.count);
-        tooltip.textContent = `${c.dataset.date}  ·  ${n === 0 ? 'no posts' : n === 1 ? '1 post' : n + ' posts'}`;
+        tooltip.textContent   = `${c.dataset.date}  ·  ${n === 0 ? 'no posts' : n === 1 ? '1 post' : n + ' posts'}`;
         tooltip.style.display = 'block';
       });
       grid.addEventListener('mousemove', e => {
         const tipW = tooltip.offsetWidth || 160;
-        const x = (e.clientX + 14 + tipW > window.innerWidth)
-          ? e.clientX - tipW - 8
-          : e.clientX + 14;
+        const x    = (e.clientX + 14 + tipW > window.innerWidth) ? e.clientX - tipW - 8 : e.clientX + 14;
         tooltip.style.left = x + 'px';
         tooltip.style.top  = (e.clientY - 32) + 'px';
       });
       grid.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
     }
+  }
+
+  /* ══════════════════════════════════════
+     Post card scroll entrance
+     ══════════════════════════════════════ */
+  const cards = document.querySelectorAll('.post-card');
+  if (cards.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.style.transition = `opacity 380ms ease, transform 380ms ease`;
+        e.target.style.opacity    = '1';
+        e.target.style.transform  = 'none';
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.06 });
+    cards.forEach((c, i) => {
+      c.style.opacity   = '0';
+      c.style.transform = 'translateY(14px)';
+      io.observe(c);
+    });
   }
 
   /* ══════════════════════════════════════

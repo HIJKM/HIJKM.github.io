@@ -37,6 +37,23 @@ a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 
 /* ============================================================
+   Page-level entrance animations
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.site-header  { animation: fadeIn  300ms ease both; }
+.home-bar     { animation: fadeUp  360ms 60ms ease both; }
+.heatmap-section { animation: fadeUp 360ms 100ms ease both; }
+
+/* ============================================================
    Header — HIJKM only
    ============================================================ */
 .site-header {
