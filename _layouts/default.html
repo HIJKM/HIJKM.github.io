@@ -1,29 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" />
-  <link rel="stylesheet" href="{{ '/assets/css/graph.css' | relative_url }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}">
+
+  <header class="site-header">
+    <a class="site-logo" href="{{ '/' | relative_url }}">HIJKM</a>
+    <button id="explore-btn" class="btn-explore" aria-haspopup="dialog">explore</button>
+  </header>
+
   <div class="site-shell">
-    <header class="site-chrome">
-      <a class="site-mark" href="{{ '/' | relative_url }}">
-        <span class="site-mark-name">{{ site.title }}</span>
-        <span class="site-mark-tag">{{ site.tagline }}</span>
-      </a>
-
-      <nav class="site-links" aria-label="site">
-        <button id="explore-btn" class="btn-explore" aria-haspopup="dialog">explore</button>
-      </nav>
-    </header>
-
-    <main id="main-content" class="content-flow">
+    <main id="main-content">
       {{ content }}
     </main>
   </div>
