@@ -39,13 +39,13 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeSearch(); } });
 
   /* ══════════════════════════════════════
-     Search
+     Inline header search
      ══════════════════════════════════════ */
-  const searchBtn     = document.getElementById('search-btn');
-  const searchOverlay = document.getElementById('search-overlay');
-  const searchInput   = document.getElementById('search-input');
-  const searchResults = document.getElementById('search-results');
-  const searchClose   = document.getElementById('search-close');
+  const headerSearch   = document.getElementById('header-search');
+  const searchBtn      = document.getElementById('search-btn');
+  const searchInput    = document.getElementById('search-input');
+  const searchResults  = document.getElementById('search-results');
+  const searchDropdown = document.getElementById('search-dropdown');
 
   let posts = null;
 
@@ -57,54 +57,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function loadPosts() {
     if (posts !== null) return;
-    try {
-      const data = await fetchGraphData();
-      posts = data.nodes || [];
-    } catch (e) { posts = []; }
+    try { const data = await fetchGraphData(); posts = data.nodes || []; }
+    catch (e) { posts = []; }
   }
 
   function openSearch() {
-    searchOverlay?.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    searchInput?.focus();
+    headerSearch?.classList.add('is-open');
+    setTimeout(() => searchInput?.focus(), 50); // after width transition starts
     loadPosts();
   }
 
   function closeSearch() {
-    if (!searchOverlay?.classList.contains('is-open')) return;
-    searchOverlay.classList.remove('is-open');
-    document.body.style.overflow = '';
-    if (searchInput) searchInput.value = '';
+    if (!headerSearch?.classList.contains('is-open')) return;
+    headerSearch.classList.remove('is-open');
+    searchDropdown?.classList.remove('is-open');
+    if (searchInput)  searchInput.value = '';
     if (searchResults) searchResults.innerHTML = '';
   }
 
-  searchBtn?.addEventListener('click', openSearch);
-  searchClose?.addEventListener('click', closeSearch);
-  searchOverlay?.addEventListener('click', e => { if (e.target === searchOverlay) closeSearch(); });
+  searchBtn?.addEventListener('click', e => {
+    e.stopPropagation();
+    headerSearch?.classList.contains('is-open') ? closeSearch() : openSearch();
+  });
+
+  document.addEventListener('click', e => {
+    if (headerSearch && !headerSearch.contains(e.target) &&
+        searchDropdown && !searchDropdown.contains(e.target)) closeSearch();
+  });
 
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeSearch(); closeModal(); }
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
   });
 
   searchInput?.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
-    if (!q) { searchResults.innerHTML = ''; return; }
+    if (!q) { searchDropdown?.classList.remove('is-open'); if (searchResults) searchResults.innerHTML = ''; return; }
 
     const matches = (posts || []).filter(p =>
       p.title.toLowerCase().includes(q) ||
       (p.tags || []).some(t => t.toLowerCase().includes(q))
     );
 
-    if (!matches.length) {
-      searchResults.innerHTML = '<p class="search-empty">No results found.</p>';
-      return;
+    if (searchResults) {
+      searchResults.innerHTML = matches.length
+        ? matches.map(p => `
+            <a class="search-result" href="${p.url}">
+              <span class="search-result-title">${p.title}</span>
+              <span class="search-result-date">${fmtDate(p.date)}</span>
+            </a>`).join('')
+        : '<p class="search-empty">No results found.</p>';
     }
-
-    searchResults.innerHTML = matches.map(p => `
-      <a class="search-result" href="${p.url}">
-        <span class="search-result-title">${p.title}</span>
-        <span class="search-result-date">${fmtDate(p.date)}</span>
-      </a>`).join('');
+    searchDropdown?.classList.toggle('is-open', !!q);
   });
 
   /* ══════════════════════════════════════
