@@ -94,35 +94,63 @@ img { max-width: 100%; display: block; }
 }
 
 /* ============================================================
-   Home — post list
+   Home — top bar
    ============================================================ */
-.home-intro {
-  padding: 2.75rem 0 2rem;
+.home-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--line);
 }
 
-.home-intro h1 {
-  font-family: var(--font-sans);
+.home-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.home-stat-num {
+  font-family: var(--font-serif);
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink);
-  letter-spacing: -0.03em;
-  margin: 0 0 0.35rem;
+  line-height: 1;
 }
 
-.home-description {
+.home-stat-label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
   color: var(--ink-muted);
-  font-size: 0.95rem;
-  margin: 0;
-  line-height: 1.5;
+  letter-spacing: 0.04em;
 }
 
-.eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.btn-explore-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.btn-explore-hero:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.btn-explore-hero svg {
+  flex-shrink: 0;
   color: var(--ink-muted);
-  margin: 0 0 0.75rem;
 }
 
 .post-list {
@@ -762,10 +790,15 @@ img { max-width: 100%; display: block; }
 /* ============================================================
    Mobile
    ============================================================ */
+/* 홈에서 헤더 explore 버튼 숨김 (home-bar에 있음) */
+body.is-home .btn-explore { display: none; }
+
 @media (max-width: 680px) {
   .site-header { padding: 0 1.25rem; height: 52px; }
-  .site-logo   { font-size: 1.3rem; }
+  .site-logo   { font-size: 1.75rem; }
   .site-shell  { padding: 0 1rem; }
+  .home-bar    { padding: 1.25rem 0; }
+  .home-stat-num { font-size: 1.4rem; }
   .reading-surface { padding: 2rem 1rem 4rem; }
   .page-copy    { padding: 2rem 1rem 4rem; }
   .graph-scene  { padding: 2rem 1rem; }
