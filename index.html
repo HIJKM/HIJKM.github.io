@@ -20,13 +20,6 @@ title: Home
       {% else %}
       <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
       {% endif %}
-      {% if post.tags %}
-      <p class="post-card-tags">
-        {% for tag in post.tags limit:4 %}
-        <span>#{{ tag }}</span>
-        {% endfor %}
-      </p>
-      {% endif %}
     </a>
   </article>
   {% endfor %}
