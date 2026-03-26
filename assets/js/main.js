@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+  /* ══════════════════════════════════════
+     Graph modal (explore 버튼)
+     ══════════════════════════════════════ */
   const exploreBtn  = document.getElementById('explore-btn');
   const modal       = document.getElementById('graph-modal');
   const closeBtn    = document.getElementById('graph-modal-close');
@@ -9,10 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function openModal() {
     modal?.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    if (!graphInited) {
-      graphInited = true;
-      initModalGraph();
-    }
+    if (!graphInited) { graphInited = true; initModalGraph(); }
   }
 
   function closeModal() {
@@ -23,12 +24,170 @@ document.addEventListener('DOMContentLoaded', function () {
   exploreBtn?.addEventListener('click', openModal);
   closeBtn?.addEventListener('click', closeModal);
   backdrop?.addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeSearch(); } });
+
+  /* ══════════════════════════════════════
+     Search
+     ══════════════════════════════════════ */
+  const searchBtn     = document.getElementById('search-btn');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchInput   = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const searchClose   = document.getElementById('search-close');
+
+  let posts = null;
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  async function loadPosts() {
+    if (posts !== null) return;
+    const base = window.SITE_BASEURL || '';
+    try {
+      const res = await fetch(`${base}/graph-data.json`);
+      const data = await res.json();
+      posts = data.nodes || [];
+    } catch (e) { posts = []; }
+  }
+
+  function openSearch() {
+    searchOverlay?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    searchInput?.focus();
+    loadPosts();
+  }
+
+  function closeSearch() {
+    if (!searchOverlay?.classList.contains('is-open')) return;
+    searchOverlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+    if (searchInput) searchInput.value = '';
+    if (searchResults) searchResults.innerHTML = '';
+  }
+
+  searchBtn?.addEventListener('click', openSearch);
+  searchClose?.addEventListener('click', closeSearch);
+  searchOverlay?.addEventListener('click', e => { if (e.target === searchOverlay) closeSearch(); });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
   });
 
-  /* ── 모달 내부 D3 그래프 ── */
+  searchInput?.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) { searchResults.innerHTML = ''; return; }
+
+    const matches = (posts || []).filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+
+    if (!matches.length) {
+      searchResults.innerHTML = '<p class="search-empty">No results found.</p>';
+      return;
+    }
+
+    searchResults.innerHTML = matches.map(p => `
+      <a class="search-result" href="${p.url}">
+        <span class="search-result-title">${p.title}</span>
+        <span class="search-result-date">${fmtDate(p.date)}</span>
+      </a>`).join('');
+  });
+
+  /* ══════════════════════════════════════
+     Activity Heatmap
+     ══════════════════════════════════════ */
+  const heatmapGrid = document.getElementById('heatmap-grid');
+
+  if (heatmapGrid) {
+    const base = window.SITE_BASEURL || '';
+    fetch(`${base}/graph-data.json`)
+      .then(r => r.json())
+      .then(data => renderHeatmap(data.nodes || []))
+      .catch(() => {});
+  }
+
+  function renderHeatmap(nodes) {
+    const grid      = document.getElementById('heatmap-grid');
+    const monthsEl  = document.getElementById('heatmap-months');
+    const tooltip   = document.getElementById('heatmap-tooltip');
+    if (!grid) return;
+
+    // 날짜 → 글 수 맵
+    const dateMap = {};
+    nodes.forEach(n => {
+      if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + 1;
+    });
+
+    // 52주 전 일요일부터 오늘까지
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(today);
+    start.setDate(start.getDate() - 52 * 7 + 1);
+    start.setDate(start.getDate() - start.getDay()); // 일요일로 맞춤
+
+    const CELL = 13; // cell(11) + gap(2)
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let lastMonth = -1;
+    let colIndex  = 0;
+
+    const cur = new Date(start);
+    const cells = [];
+    while (cur <= today) {
+      const key = cur.toISOString().slice(0, 10);
+      cells.push({ date: key, count: dateMap[key] || 0, dow: cur.getDay() });
+
+      // 월 레이블 (주 시작마다 체크)
+      if (cur.getDay() === 0 && monthsEl) {
+        const m = cur.getMonth();
+        if (m !== lastMonth) {
+          const span = document.createElement('span');
+          span.textContent = MONTHS[m];
+          span.style.left = (colIndex * CELL) + 'px';
+          monthsEl.appendChild(span);
+          lastMonth = m;
+        }
+        colIndex++;
+      }
+
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // 셀 렌더링
+    cells.forEach(cell => {
+      const el = document.createElement('div');
+      el.className = 'hm-cell';
+      el.dataset.date  = cell.date;
+      el.dataset.count = cell.count;
+      if (cell.count > 0) {
+        el.classList.add(cell.count >= 4 ? 'hm-l4' : cell.count === 3 ? 'hm-l3' : cell.count === 2 ? 'hm-l2' : 'hm-l1');
+      }
+      grid.appendChild(el);
+    });
+
+    // 툴팁
+    if (tooltip) {
+      grid.addEventListener('mouseover', e => {
+        const c = e.target.closest('.hm-cell');
+        if (!c) return;
+        const n = Number(c.dataset.count);
+        tooltip.textContent = `${c.dataset.date}  ·  ${n === 0 ? 'no posts' : n === 1 ? '1 post' : n + ' posts'}`;
+        tooltip.style.display = 'block';
+      });
+      grid.addEventListener('mousemove', e => {
+        tooltip.style.left = (e.clientX + 12) + 'px';
+        tooltip.style.top  = (e.clientY - 30) + 'px';
+      });
+      grid.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    }
+  }
+
+  /* ══════════════════════════════════════
+     Modal D3 Graph
+     ══════════════════════════════════════ */
   async function initModalGraph() {
     const base = window.SITE_BASEURL || '';
     let data;
@@ -39,7 +198,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!data?.nodes?.length || typeof d3 === 'undefined') return;
 
-    // linkCount 계산
     data.nodes.forEach(n => { n.linkCount = 0; });
     data.links.forEach(l => {
       const sId = typeof l.source === 'object' ? l.source.id : l.source;
@@ -77,14 +235,13 @@ document.addEventListener('DOMContentLoaded', function () {
     svg.call(zoom);
     svg.call(zoom.transform, d3.zoomIdentity.translate(w / 2, h / 2).scale(0.78));
 
-    const BOUNDARY = 520; // 시뮬레이션 좌표 기준 원형 경계 반지름
+    const BOUNDARY = 520;
 
     const sim = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(80).strength(0.35))
       .force('charge', d3.forceManyBody().strength(-200).distanceMax(380))
       .force('center', d3.forceCenter(0, 0))
       .force('collision', d3.forceCollide().radius(d => 14 + Math.min(d.linkCount || 0, 6) * 1.2))
-      // 경계 복귀 force: 노드가 BOUNDARY 밖으로 나가면 중심으로 당김
       .force('boundary', () => {
         data.nodes.forEach(d => {
           const dist = Math.hypot(d.x, d.y);
@@ -96,39 +253,30 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       });
 
-    // 빈 공간 드래그 → 노드 전체에 속도 전달 (물리 끌림 효과)
-    let bgDragging = false;
-    let lastBgPos  = null;
-
-    svg.on('mousedown.bgpull', function (event) {
-      if (event.target === svgEl) {
-        bgDragging = true;
-        lastBgPos  = { x: event.clientX, y: event.clientY };
-      }
+    let bgDragging = false, lastBgPos = null;
+    svg.on('mousedown.bgpull', function (e) {
+      if (e.target === svgEl) { bgDragging = true; lastBgPos = { x: e.clientX, y: e.clientY }; }
     });
-    svg.on('mousemove.bgpull', function (event) {
+    svg.on('mousemove.bgpull', function (e) {
       if (!bgDragging || !lastBgPos) return;
-      const dx = (event.clientX - lastBgPos.x) * 0.55;
-      const dy = (event.clientY - lastBgPos.y) * 0.55;
-      lastBgPos = { x: event.clientX, y: event.clientY };
+      const dx = (e.clientX - lastBgPos.x) * 0.55;
+      const dy = (e.clientY - lastBgPos.y) * 0.55;
+      lastBgPos = { x: e.clientX, y: e.clientY };
       data.nodes.forEach(d => { d.vx += dx; d.vy += dy; });
       sim.alphaTarget(0.08).restart();
     });
     svg.on('mouseup.bgpull mouseleave.bgpull', function () {
       if (!bgDragging) return;
-      bgDragging = false;
-      lastBgPos  = null;
-      sim.alphaTarget(0);
+      bgDragging = false; lastBgPos = null; sim.alphaTarget(0);
     });
 
     const link = g.append('g').selectAll('line').data(data.links).enter()
       .append('line').attr('class', 'graph-link');
 
-    // tooltip
-    const tooltip = document.createElement('div');
-    tooltip.className = 'graph-tooltip';
-    tooltip.style.display = 'none';
-    container.appendChild(tooltip);
+    const tipEl = document.createElement('div');
+    tipEl.className = 'graph-tooltip';
+    tipEl.style.display = 'none';
+    container.appendChild(tipEl);
 
     const node = g.append('g').selectAll('g').data(data.nodes).enter().append('g')
       .attr('class', d => 'graph-node' + (d.id === currentNode?.id ? ' current' : ''))
@@ -141,10 +289,10 @@ document.addEventListener('DOMContentLoaded', function () {
       .attr('r', d => d.id === currentNode?.id ? 9 : 5 + Math.min(d.linkCount || 0, 5) * 1.1)
       .attr('fill', d => {
         if (d.id === currentNode?.id) return 'var(--accent)';
-        if (linkedIds.has(d.id))      return '#9ece6a';
+        if (linkedIds.has(d.id)) return '#9ece6a';
         return 'rgba(35,29,26,0.25)';
       })
-      .attr('stroke', d => d.id === currentNode?.id ? 'rgba(255,107,87,0.3)' : 'none')
+      .attr('stroke', d => d.id === currentNode?.id ? 'rgba(26,137,23,0.3)' : 'none')
       .attr('stroke-width', 4);
 
     node.append('text')
@@ -152,19 +300,19 @@ document.addEventListener('DOMContentLoaded', function () {
       .attr('dy', '0.35em')
       .attr('font-size', 10)
       .attr('fill', 'var(--ink-soft)')
-      .attr('font-family', 'IBM Plex Sans KR, sans-serif')
-      .text(d => d.title.length > 18 ? d.title.slice(0, 18) + '…' : d.title);
+      .attr('font-family', 'DM Sans, sans-serif')
+      .text(d => d.title.length > 20 ? d.title.slice(0, 20) + '…' : d.title);
 
     node
       .on('mouseover', function (event, d) {
-        const connectedIds = new Set([d.id]);
+        const connected = new Set([d.id]);
         data.links.forEach(l => {
           const s = typeof l.source === 'object' ? l.source.id : l.source;
           const t = typeof l.target === 'object' ? l.target.id : l.target;
-          if (s === d.id) connectedIds.add(t);
-          if (t === d.id) connectedIds.add(s);
+          if (s === d.id) connected.add(t);
+          if (t === d.id) connected.add(s);
         });
-        node.classed('dimmed', n => !connectedIds.has(n.id));
+        node.classed('dimmed', n => !connected.has(n.id));
         link.classed('dimmed', l => {
           const s = typeof l.source === 'object' ? l.source.id : l.source;
           const t = typeof l.target === 'object' ? l.target.id : l.target;
@@ -175,24 +323,21 @@ document.addEventListener('DOMContentLoaded', function () {
           const t = typeof l.target === 'object' ? l.target.id : l.target;
           return s === d.id || t === d.id;
         });
-        tooltip.textContent = d.title;
-        tooltip.style.display = 'block';
+        tipEl.textContent = d.title;
+        tipEl.style.display = 'block';
       })
       .on('mousemove', function (event) {
         const rect = container.getBoundingClientRect();
-        tooltip.style.left = (event.clientX - rect.left + 14) + 'px';
-        tooltip.style.top  = (event.clientY - rect.top  - 10) + 'px';
+        tipEl.style.left = (event.clientX - rect.left + 14) + 'px';
+        tipEl.style.top  = (event.clientY - rect.top  - 10) + 'px';
       })
       .on('mouseout', function () {
         node.classed('dimmed', false);
         link.classed('dimmed', false).classed('highlighted', false);
-        tooltip.style.display = 'none';
+        tipEl.style.display = 'none';
       })
       .on('click', function (event, d) {
-        if (d.url) {
-          closeModal();
-          setTimeout(() => { window.location.href = (base || '') + d.url; }, 180);
-        }
+        if (d.url) { closeModal(); setTimeout(() => { window.location.href = (base || '') + d.url; }, 180); }
       });
 
     sim.on('tick', () => {

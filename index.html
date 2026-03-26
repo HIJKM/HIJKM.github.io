@@ -3,6 +3,22 @@ layout: default
 title: Home
 ---
 
+<div class="heatmap-wrap">
+  <div class="heatmap-header">
+    <span class="heatmap-label">posting activity</span>
+  </div>
+  <div class="heatmap-body">
+    <div class="heatmap-days">
+      <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+    </div>
+    <div class="heatmap-cols">
+      <div class="heatmap-months" id="heatmap-months"></div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+  </div>
+  <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
+</div>
+
 <div class="home-bar">
   <span class="home-stat">
     <span class="home-stat-num">{{ site.posts.size }}</span>

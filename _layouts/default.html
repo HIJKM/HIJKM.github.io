@@ -13,8 +13,29 @@
 
   <header class="site-header">
     <a class="site-logo" href="{{ '/' | relative_url }}">HIJKM</a>
-    <button id="explore-btn" class="btn-explore" aria-haspopup="dialog">explore</button>
+    <button id="search-btn" class="btn-search" aria-label="검색">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
   </header>
+
+  <!-- 검색 오버레이 -->
+  <div id="search-overlay">
+    <div class="search-panel">
+      <div class="search-header">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input id="search-input" type="text" placeholder="Search articles…" autocomplete="off" spellcheck="false">
+        <button id="search-close" class="search-close">esc</button>
+      </div>
+      <div id="search-results"></div>
+      <p class="search-hint">⌘K to open · ↵ to navigate</p>
+    </div>
+  </div>
 
   <div class="site-shell">
     <main id="main-content">
