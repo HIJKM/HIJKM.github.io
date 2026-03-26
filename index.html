@@ -50,13 +50,21 @@ title: Home
   {% for post in site.posts %}
   <article class="post-card">
     <a class="post-card-link" href="{{ post.url | relative_url }}">
-      <p class="post-card-date">{{ post.date | date: "%b %-d, %Y" }}</p>
       <h2>{{ post.title }}</h2>
       {% if post.description %}
       <p>{{ post.description }}</p>
       {% else %}
       <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
       {% endif %}
+      <div class="post-card-footer">
+        <span class="post-card-date">{{ post.date | date: "%b %-d, %Y" }}</span>
+        <span class="post-card-comments">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M14 1H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3l3 3 3-3h3a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          {{ post.comments_count | default: 0 }}
+        </span>
+      </div>
     </a>
   </article>
   {% endfor %}
