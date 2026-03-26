@@ -1,6 +1,6 @@
 ---
 title: "LeWM — 얀 르쿤 팀의 초경량 세계모델, DINO-WM보다 48배 빠르다"
-date: 2026-03-26 18:30:00 +0900
+date: 2026-03-26 09:00:00 +0900
 categories: [AI, 논문리뷰]
 tags: [AI, 세계모델, JEPA, 강화학습, 컴퓨터비전, LeCun]
 description: "픽셀만으로 물리 세계를 이해하는 경량 AI 모델 LeWorldModel 논문을 쉽게 정리합니다."

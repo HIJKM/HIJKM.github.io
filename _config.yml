@@ -20,6 +20,7 @@ comments:
   active: false
 
 paginate: 10
+future: true
 
 # Build
 markdown: kramdown
