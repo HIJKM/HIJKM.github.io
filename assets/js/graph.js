@@ -96,6 +96,8 @@
     }
     tooltip.style.display = 'none';
 
+    const BOUNDARY = 560;
+
     // Force simulation
     simulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links)
@@ -108,7 +110,44 @@
       .force('center', d3.forceCenter(0, 0))
       .force('collision', d3.forceCollide()
         .radius(d => nodeRadius(d, currentNode) + 8))
+      // 경계 복귀 force
+      .force('boundary', () => {
+        data.nodes.forEach(d => {
+          const dist = Math.hypot(d.x, d.y);
+          if (dist > BOUNDARY) {
+            const excess = dist - BOUNDARY;
+            d.vx -= (d.x / dist) * excess * 0.018;
+            d.vy -= (d.y / dist) * excess * 0.018;
+          }
+        });
+      })
       .alphaDecay(0.03);
+
+    // 빈 공간 드래그 → 노드 전체 속도 전달
+    let bgDragging = false;
+    let lastBgPos  = null;
+    const svgNode  = svg.node();
+
+    svg.on('mousedown.bgpull', function (event) {
+      if (event.target === svgNode) {
+        bgDragging = true;
+        lastBgPos  = { x: event.clientX, y: event.clientY };
+      }
+    });
+    svg.on('mousemove.bgpull', function (event) {
+      if (!bgDragging || !lastBgPos) return;
+      const dx = (event.clientX - lastBgPos.x) * 0.55;
+      const dy = (event.clientY - lastBgPos.y) * 0.55;
+      lastBgPos = { x: event.clientX, y: event.clientY };
+      data.nodes.forEach(d => { d.vx += dx; d.vy += dy; });
+      simulation.alphaTarget(0.08).restart();
+    });
+    svg.on('mouseup.bgpull mouseleave.bgpull', function () {
+      if (!bgDragging) return;
+      bgDragging = false;
+      lastBgPos  = null;
+      simulation.alphaTarget(0);
+    });
 
     // Links
     const link = g.append('g').attr('class', 'links')

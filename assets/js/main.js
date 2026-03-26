@@ -77,11 +77,49 @@ document.addEventListener('DOMContentLoaded', function () {
     svg.call(zoom);
     svg.call(zoom.transform, d3.zoomIdentity.translate(w / 2, h / 2).scale(0.78));
 
+    const BOUNDARY = 520; // 시뮬레이션 좌표 기준 원형 경계 반지름
+
     const sim = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(80).strength(0.35))
       .force('charge', d3.forceManyBody().strength(-200).distanceMax(380))
       .force('center', d3.forceCenter(0, 0))
-      .force('collision', d3.forceCollide().radius(d => 14 + Math.min(d.linkCount || 0, 6) * 1.2));
+      .force('collision', d3.forceCollide().radius(d => 14 + Math.min(d.linkCount || 0, 6) * 1.2))
+      // 경계 복귀 force: 노드가 BOUNDARY 밖으로 나가면 중심으로 당김
+      .force('boundary', () => {
+        data.nodes.forEach(d => {
+          const dist = Math.hypot(d.x, d.y);
+          if (dist > BOUNDARY) {
+            const excess = dist - BOUNDARY;
+            d.vx -= (d.x / dist) * excess * 0.018;
+            d.vy -= (d.y / dist) * excess * 0.018;
+          }
+        });
+      });
+
+    // 빈 공간 드래그 → 노드 전체에 속도 전달 (물리 끌림 효과)
+    let bgDragging = false;
+    let lastBgPos  = null;
+
+    svg.on('mousedown.bgpull', function (event) {
+      if (event.target === svgEl) {
+        bgDragging = true;
+        lastBgPos  = { x: event.clientX, y: event.clientY };
+      }
+    });
+    svg.on('mousemove.bgpull', function (event) {
+      if (!bgDragging || !lastBgPos) return;
+      const dx = (event.clientX - lastBgPos.x) * 0.55;
+      const dy = (event.clientY - lastBgPos.y) * 0.55;
+      lastBgPos = { x: event.clientX, y: event.clientY };
+      data.nodes.forEach(d => { d.vx += dx; d.vy += dy; });
+      sim.alphaTarget(0.08).restart();
+    });
+    svg.on('mouseup.bgpull mouseleave.bgpull', function () {
+      if (!bgDragging) return;
+      bgDragging = false;
+      lastBgPos  = null;
+      sim.alphaTarget(0);
+    });
 
     const link = g.append('g').selectAll('line').data(data.links).enter()
       .append('line').attr('class', 'graph-link');
