@@ -310,11 +310,19 @@ img { max-width: 100%; display: block; }
 
 .post-content p { margin: 0 0 1.15rem; }
 
-.post-content ul,
-.post-content ol {
+.post-content ul {
   padding-left: 1.25rem;
   margin: 0 0 1.2rem;
   list-style: none;
+}
+
+.post-content ol {
+  padding-left: 1.5rem;
+  margin: 0 0 1.2rem;
+}
+
+.post-content ul > li {
+  position: relative;
 }
 
 .post-content ul > li::before {
@@ -324,11 +332,6 @@ img { max-width: 100%; display: block; }
   color: var(--ink-muted);
   font-style: normal;
   font-size: 0.9em;
-}
-
-.post-content ul > li,
-.post-content ol > li {
-  position: relative;
 }
 
 .post-content li + li { margin-top: 0.5rem; }
