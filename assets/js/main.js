@@ -1,6 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   /* ══════════════════════════════════════
+     Shared data cache
+     ══════════════════════════════════════ */
+  let _graphData = null;
+  function fetchGraphData() {
+    if (_graphData) return Promise.resolve(_graphData);
+    const base = window.SITE_BASEURL || '';
+    return fetch(`${base}/graph-data.json`)
+      .then(r => r.json())
+      .then(d => { _graphData = d; return d; });
+  }
+
+  /* ══════════════════════════════════════
      Graph modal (explore 버튼)
      ══════════════════════════════════════ */
   const exploreBtn  = document.getElementById('explore-btn');
@@ -45,10 +57,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function loadPosts() {
     if (posts !== null) return;
-    const base = window.SITE_BASEURL || '';
     try {
-      const res = await fetch(`${base}/graph-data.json`);
-      const data = await res.json();
+      const data = await fetchGraphData();
       posts = data.nodes || [];
     } catch (e) { posts = []; }
   }
@@ -100,6 +110,32 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ══════════════════════════════════════
      Activity Heatmap (lazy, fit-to-width)
      ══════════════════════════════════════ */
+  /* 미니 히트맵 (접힌 상태 summary에 최근 10일) */
+  const miniEl = document.getElementById('heatmap-mini');
+  if (miniEl) {
+    fetchGraphData()
+      .then(data => renderMiniHeatmap(data.nodes || []))
+      .catch(() => renderMiniHeatmap([]));
+  }
+
+  function renderMiniHeatmap(nodes) {
+    const el = document.getElementById('heatmap-mini');
+    if (!el) return;
+    const dateMap = {};
+    nodes.forEach(n => { if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + 1; });
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 9; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const key   = d.toISOString().slice(0, 10);
+      const count = dateMap[key] || 0;
+      const cell  = document.createElement('div');
+      cell.className = 'hm-mini-cell';
+      if (count > 0) cell.classList.add(count >= 4 ? 'hm-l4' : count === 3 ? 'hm-l3' : count === 2 ? 'hm-l2' : 'hm-l1');
+      el.appendChild(cell);
+    }
+  }
+
+  /* 전체 히트맵 (펼칠 때 lazy 로드) */
   const heatmapSection = document.getElementById('heatmap-section');
   let heatmapInited    = false;
 
@@ -107,9 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
     heatmapSection.addEventListener('toggle', () => {
       if (heatmapSection.open && !heatmapInited) {
         heatmapInited = true;
-        const base = window.SITE_BASEURL || '';
-        fetch(`${base}/graph-data.json`)
-          .then(r => r.json())
+        fetchGraphData()
           .then(data => renderHeatmap(data.nodes || []))
           .catch(() => renderHeatmap([]));
       }
@@ -184,8 +218,12 @@ document.addEventListener('DOMContentLoaded', function () {
         tooltip.style.display = 'block';
       });
       grid.addEventListener('mousemove', e => {
-        tooltip.style.left = (e.clientX + 12) + 'px';
-        tooltip.style.top  = (e.clientY - 30) + 'px';
+        const tipW = tooltip.offsetWidth || 160;
+        const x = (e.clientX + 14 + tipW > window.innerWidth)
+          ? e.clientX - tipW - 8
+          : e.clientX + 14;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top  = (e.clientY - 32) + 'px';
       });
       grid.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
     }

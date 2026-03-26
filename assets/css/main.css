@@ -46,7 +46,7 @@ img { max-width: 100%; display: block; }
   width: 100%;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
-  height: 72px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -55,12 +55,13 @@ img { max-width: 100%; display: block; }
 
 .site-logo {
   font-family: var(--font-serif);
-  font-size: 2.3rem;
+  font-size: 3.4rem;
   font-weight: 600;
   font-style: italic;
   letter-spacing: 0.01em;
   color: var(--ink);
   text-decoration: none;
+  line-height: 1;
 }
 
 .site-logo:hover { color: var(--ink); opacity: 0.75; }
@@ -935,13 +936,35 @@ img { max-width: 100%; display: block; }
   list-style: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.6rem;
   padding: 0.85rem 0;
   cursor: pointer;
   user-select: none;
 }
 
 .heatmap-summary::-webkit-details-marker { display: none; }
+
+.heatmap-mini {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: auto;
+  pointer-events: none;
+}
+
+.hm-mini-cell {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+/* 미니셀도 동일 컬러 스케일 */
+.hm-mini-cell.hm-l1 { background: rgba(26, 137, 23, 0.25); }
+.hm-mini-cell.hm-l2 { background: rgba(26, 137, 23, 0.5); }
+.hm-mini-cell.hm-l3 { background: rgba(26, 137, 23, 0.75); }
+.hm-mini-cell.hm-l4 { background: var(--accent); }
 
 .heatmap-label {
   font-family: var(--font-sans);
