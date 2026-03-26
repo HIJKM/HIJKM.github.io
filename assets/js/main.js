@@ -295,8 +295,9 @@ document.addEventListener('DOMContentLoaded', function () {
       cur.setDate(cur.getDate() + 1);
     }
 
-    /* 툴팁 */
+    /* 툴팁 — body에 붙여서 컨테이너 영향 차단 */
     if (tooltip) {
+      document.body.appendChild(tooltip); // fixed 위치 보장
       grid.addEventListener('mouseover', e => {
         const c = e.target.closest('.hm-cell'); if (!c) return;
         const n = Number(c.dataset.count);
@@ -304,10 +305,12 @@ document.addEventListener('DOMContentLoaded', function () {
         tooltip.style.display = 'block';
       });
       grid.addEventListener('mousemove', e => {
-        const tipW = tooltip.offsetWidth || 160;
+        const tipH = tooltip.offsetHeight || 24;
+        const tipW = tooltip.offsetWidth  || 160;
         const x    = (e.clientX + 14 + tipW > window.innerWidth) ? e.clientX - tipW - 8 : e.clientX + 14;
+        const y    = (e.clientY - tipH - 10 < 0) ? e.clientY + 14 : e.clientY - tipH - 10;
         tooltip.style.left = x + 'px';
-        tooltip.style.top  = (e.clientY - 32) + 'px';
+        tooltip.style.top  = y + 'px';
       });
       grid.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
     }
@@ -337,9 +340,8 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ══════════════════════════════════════
      Heading labels (H1 / H2 / H3 in margin)
      ══════════════════════════════════════ */
-  document.querySelectorAll('.post-content h1, .post-content h2, .post-content h3').forEach(el => {
-    const tag = el.tagName; // H1, H2, H3
-    el.setAttribute('data-heading', tag);
+  document.querySelectorAll('.post-content h2, .post-content h3').forEach(el => {
+    el.setAttribute('data-heading', el.tagName.toLowerCase()); // "h2", "h3"
   });
 
   /* ══════════════════════════════════════

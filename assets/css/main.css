@@ -224,11 +224,11 @@ img { max-width: 100%; display: block; }
 .reading-surface {
   width: min(100%, var(--content-w));
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 5rem 3.5rem;
+  padding: 1.75rem 1.5rem 3.5rem 3.5rem;
 }
 
 .post-header {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .post-kicker {
@@ -237,26 +237,26 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.55rem;
 }
 
 .post-title {
   font-family: var(--font-sans);
-  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-size: clamp(1.7rem, 4.2vw, 2.4rem);
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.03em;
   line-height: 1.15;
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.45rem;
 }
 
 .post-description {
   font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: var(--ink-muted);
   font-weight: 400;
-  line-height: 1.55;
-  margin: 0 0 1rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem;
 }
 
 .post-meta {
@@ -387,25 +387,24 @@ img { max-width: 100%; display: block; }
 }
 
 /* 헤딩 좌측 레이블 (H1 / H2 / H3) */
-.post-content h1[data-heading],
-.post-content h2[data-heading],
-.post-content h3[data-heading] {
+.post-content h2,
+.post-content h3 {
   position: relative;
 }
 
-.post-content h1[data-heading]::before,
-.post-content h2[data-heading]::before,
-.post-content h3[data-heading]::before {
+.post-content h2::before,
+.post-content h3::before {
   content: attr(data-heading);
   position: absolute;
-  left: -2.8rem;
-  top: 0.2em;
+  left: -2.6rem;
+  top: 0.22em;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.18);
-  letter-spacing: 0.04em;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.06em;
   line-height: 1;
+  z-index: 1;
   user-select: none;
   pointer-events: none;
 }
@@ -551,13 +550,13 @@ img { max-width: 100%; display: block; }
    Comments
    ============================================================ */
 .comments-block {
-  margin-top: 3.5rem;
-  padding-top: 1.5rem;
+  margin-top: 2.25rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--line);
 }
 
 .comments-header {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .comments-count {
@@ -598,8 +597,8 @@ img { max-width: 100%; display: block; }
 }
 
 .comments-empty {
-  margin-top: 1.5rem;
-  padding: 1.75rem 0;
+  margin-top: 1rem;
+  padding: 1.25rem 0;
   text-align: center;
 }
 
