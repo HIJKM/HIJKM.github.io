@@ -237,7 +237,7 @@ img { max-width: 100%; display: block; }
    Post page
    ============================================================ */
 .reading-surface {
-  padding: 1.5rem 0 2.5rem;
+  padding: 1.5rem 0.75rem 2.5rem;
 }
 
 .post-header {
@@ -1127,7 +1127,7 @@ img { max-width: 100%; display: block; }
   .site-shell  { padding: 0 1rem; }
   .home-bar    { padding: 1.25rem 0; }
   .home-stat-num { font-size: 1.4rem; }
-  .reading-surface { padding: 1.5rem 0 3rem; }
+  .reading-surface { padding: 1.5rem 0.5rem 3rem; }
   .post-content h1[data-heading]::before,
   .post-content h2[data-heading]::before,
   .post-content h3[data-heading]::before { display: none; }
