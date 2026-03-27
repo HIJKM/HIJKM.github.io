@@ -63,7 +63,7 @@ img { max-width: 100%; display: block; }
   width: 100%;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
-  height: 96px;
+  height: 104px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,7 +72,7 @@ img { max-width: 100%; display: block; }
 
 .site-logo {
   font-family: var(--font-serif);
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 700;
   font-style: italic;
   letter-spacing: 0.01em;
@@ -923,7 +923,7 @@ img { max-width: 100%; display: block; }
 .search-dropdown {
   display: none;
   position: fixed;
-  top: 96px;
+  top: 104px;
   left: 0;
   right: 0;
   z-index: 500;
