@@ -1121,13 +1121,13 @@ img { max-width: 100%; display: block; }
 
 @media (max-width: 680px) {
   .site-header { padding: 0 1.25rem; height: 68px; }
-  .site-logo   { font-size: 2.8rem; }
+  .site-logo   { font-size: 2.2rem; }
   .search-dropdown { top: 52px; }
   .header-search.is-open .search-input-wrap { width: clamp(100px, 40vw, 180px); }
   .site-shell  { padding: 0 1rem; }
   .home-bar    { padding: 1.25rem 0; }
   .home-stat-num { font-size: 1.4rem; }
-  .reading-surface { padding: 2rem 1rem 4rem; }
+  .reading-surface { padding: 1.5rem 0 3rem; }
   .post-content h1[data-heading]::before,
   .post-content h2[data-heading]::before,
   .post-content h3[data-heading]::before { display: none; }
