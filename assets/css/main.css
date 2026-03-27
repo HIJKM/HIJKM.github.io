@@ -307,7 +307,7 @@ img { max-width: 100%; display: block; }
 
 .post-content h2 {
   font-family: var(--font-sans);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.02em;
@@ -317,7 +317,7 @@ img { max-width: 100%; display: block; }
 
 .post-content h3 {
   font-family: var(--font-sans);
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--ink);
   margin: 2rem 0 0.7rem;
