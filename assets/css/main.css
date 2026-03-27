@@ -237,8 +237,6 @@ img { max-width: 100%; display: block; }
    Post page
    ============================================================ */
 .reading-surface {
-  width: min(100%, var(--content-w));
-  margin: 0 auto;
   padding: 1.5rem 0 2.5rem;
 }
 

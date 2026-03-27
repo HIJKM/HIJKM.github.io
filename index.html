@@ -51,7 +51,12 @@ title: Home
   <article class="post-card">
     <a class="post-card-link" href="{{ post.url | relative_url }}">
       <h2>{{ post.title }}</h2>
-      <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
+      {% assign pre_heading = post.content | split: '<h' | first | strip_html | strip %}
+      {% if pre_heading != '' %}
+      <p>{{ pre_heading | truncatewords: 30 }}</p>
+      {% else %}
+      <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
+      {% endif %}
       <div class="post-card-footer">
         <span class="post-card-date">{{ post.date | date: "%b %-d, %Y" }}</span>
         <span class="post-card-comments">
