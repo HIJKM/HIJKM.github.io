@@ -279,13 +279,21 @@ document.addEventListener('DOMContentLoaded', function () {
       const key = cur.toISOString().slice(0, 10);
       const count = dateMap[key] || 0;
       if (cur.getDay() === 0 && monthsEl) {
-        const m = cur.getMonth();
-        if (m !== lastMonth) {
+        // 이 주(일~토)에 1일이 포함된 경우에만 월 레이블 표시
+        const weekEnd = new Date(cur);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        let labelMonth = -1;
+        if (cur.getDate() === 1) {
+          labelMonth = cur.getMonth();               // 일요일이 1일
+        } else if (cur.getMonth() !== weekEnd.getMonth()) {
+          labelMonth = weekEnd.getMonth();           // 이 주 안에 월이 바뀜
+        }
+        if (labelMonth !== -1 && labelMonth !== lastMonth) {
           const span = document.createElement('span');
-          span.textContent = MONTHS[m];
+          span.textContent = MONTHS[labelMonth];
           span.style.left  = (colIndex * CELL_STEP) + 'px';
           monthsEl.appendChild(span);
-          lastMonth = m;
+          lastMonth = labelMonth;
         }
         colIndex++;
       }
