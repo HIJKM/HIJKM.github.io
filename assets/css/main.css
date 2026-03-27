@@ -63,7 +63,7 @@ img { max-width: 100%; display: block; }
   width: 100%;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
-  height: 104px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,13 +72,14 @@ img { max-width: 100%; display: block; }
 
 .site-logo {
   font-family: var(--font-serif);
-  font-size: 4.5rem;
+  font-size: 3rem;
   font-weight: 700;
   font-style: italic;
   letter-spacing: 0.01em;
   color: var(--ink);
   text-decoration: none;
   line-height: 1;
+  padding-top: 0.15rem;
 }
 
 .site-logo:hover { color: var(--ink); opacity: 0.75; }
@@ -339,7 +340,7 @@ img { max-width: 100%; display: block; }
    ============================================================ */
 .post-content {
   font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1.6;
   color: var(--ink-soft);
 }
@@ -903,6 +904,56 @@ img { max-width: 100%; display: block; }
 }
 
 /* ============================================================
+   PC Sidebar layout  (≥ 860px)
+   ============================================================ */
+@media (min-width: 860px) {
+  .site-shell {
+    width: min(100%, 960px);
+    padding: 0 2.5rem;
+  }
+
+  .home-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 3.5rem;
+    align-items: start;
+    padding-top: 1.75rem;
+  }
+
+  .home-sidebar {
+    position: sticky;
+    top: calc(80px + 1.5rem);
+    --hm-cell: 7px;
+  }
+
+  /* 사이드바 안 home-bar: 세로 스택 */
+  .home-sidebar .home-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0.85rem;
+    padding: 0 0 1.25rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0;
+  }
+
+  /* 사이드바 안 heatmap: 하단 구분선 제거 */
+  .home-sidebar .heatmap-section {
+    border-bottom: none;
+    padding-top: 0.25rem;
+  }
+
+  /* 포스트 목록 영역 */
+  .home-main {
+    border-top: 1px solid var(--line);
+  }
+
+  .home-main .post-card:first-child {
+    padding-top: 1.5rem;
+  }
+}
+
+/* ============================================================
    Mobile
    ============================================================ */
 /* ============================================================
@@ -962,7 +1013,7 @@ img { max-width: 100%; display: block; }
 .search-dropdown {
   display: none;
   position: fixed;
-  top: 104px;
+  top: 80px;
   left: 0;
   right: 0;
   z-index: 500;

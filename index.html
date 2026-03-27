@@ -3,67 +3,75 @@ layout: default
 title: Home
 ---
 
-<div class="home-bar">
-  <span class="home-stat">
-    <span class="home-stat-num">{{ site.posts.size }}</span>
-    <span class="home-stat-label">articles</span>
-  </span>
-  <button class="btn-explore-hero" id="explore-btn" aria-haspopup="dialog">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <circle cx="7" cy="7" r="2" fill="currentColor"/>
-      <circle cx="2" cy="3" r="1.5" fill="currentColor" opacity=".5"/>
-      <circle cx="12" cy="2" r="1.5" fill="currentColor" opacity=".5"/>
-      <circle cx="11" cy="11" r="1.5" fill="currentColor" opacity=".5"/>
-      <circle cx="3" cy="11" r="1.5" fill="currentColor" opacity=".5"/>
-      <line x1="7" y1="7" x2="2" y2="3" stroke="currentColor" stroke-width="1" opacity=".35"/>
-      <line x1="7" y1="7" x2="12" y2="2" stroke="currentColor" stroke-width="1" opacity=".35"/>
-      <line x1="7" y1="7" x2="11" y2="11" stroke="currentColor" stroke-width="1" opacity=".35"/>
-      <line x1="7" y1="7" x2="3" y2="11" stroke="currentColor" stroke-width="1" opacity=".35"/>
-    </svg>
-    explore graph
-  </button>
-</div>
+<div class="home-layout">
 
-<details class="heatmap-section" id="heatmap-section">
-  <summary class="heatmap-summary">
-    <span class="heatmap-label">posting activity</span>
-    <div class="heatmap-mini" id="heatmap-mini"></div>
-    <svg class="heatmap-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </summary>
-  <div class="heatmap-inner" id="heatmap-inner">
-    <div class="heatmap-body">
-      <div class="heatmap-days">
-        <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
-      </div>
-      <div class="heatmap-cols">
-        <div class="heatmap-months" id="heatmap-months"></div>
-        <div class="heatmap-grid" id="heatmap-grid"></div>
-      </div>
+  <aside class="home-sidebar">
+
+    <div class="home-bar">
+      <span class="home-stat">
+        <span class="home-stat-num">{{ site.posts.size }}</span>
+        <span class="home-stat-label">articles</span>
+      </span>
+      <button class="btn-explore-hero" id="explore-btn" aria-haspopup="dialog">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="2" fill="currentColor"/>
+          <circle cx="2" cy="3" r="1.5" fill="currentColor" opacity=".5"/>
+          <circle cx="12" cy="2" r="1.5" fill="currentColor" opacity=".5"/>
+          <circle cx="11" cy="11" r="1.5" fill="currentColor" opacity=".5"/>
+          <circle cx="3" cy="11" r="1.5" fill="currentColor" opacity=".5"/>
+          <line x1="7" y1="7" x2="2" y2="3" stroke="currentColor" stroke-width="1" opacity=".35"/>
+          <line x1="7" y1="7" x2="12" y2="2" stroke="currentColor" stroke-width="1" opacity=".35"/>
+          <line x1="7" y1="7" x2="11" y2="11" stroke="currentColor" stroke-width="1" opacity=".35"/>
+          <line x1="7" y1="7" x2="3" y2="11" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        </svg>
+        explore graph
+      </button>
     </div>
-    <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
-  </div>
-</details>
 
-<section class="post-list" aria-label="posts">
-  {% for post in site.posts %}
-  <article class="post-card">
-    <a class="post-card-link" href="{{ post.url | relative_url }}">
-      <h2>{{ post.title }}</h2>
-      {% assign _parts = post.content | split: '<p>' %}
-      {% assign _first_p = _parts[1] | split: '</p>' | first | strip_html | strip %}
-      <p>{{ _first_p | truncatewords: 30 }}</p>
-      <div class="post-card-footer">
-        <span class="post-card-date">{{ post.date | date: "%b %-d, %Y" }}</span>
-        <span class="post-card-comments">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M14 1H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3l3 3 3-3h3a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-          </svg>
-          {{ post.comments_count | default: 0 }}
-        </span>
+    <details class="heatmap-section" id="heatmap-section">
+      <summary class="heatmap-summary">
+        <span class="heatmap-label">posting activity</span>
+        <div class="heatmap-mini" id="heatmap-mini"></div>
+        <svg class="heatmap-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </summary>
+      <div class="heatmap-inner" id="heatmap-inner">
+        <div class="heatmap-body">
+          <div class="heatmap-days">
+            <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+          </div>
+          <div class="heatmap-cols">
+            <div class="heatmap-months" id="heatmap-months"></div>
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+          </div>
+        </div>
+        <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
       </div>
-    </a>
-  </article>
-  {% endfor %}
-</section>
+    </details>
+
+  </aside>
+
+  <section class="home-main post-list" aria-label="posts">
+    {% for post in site.posts %}
+    <article class="post-card">
+      <a class="post-card-link" href="{{ post.url | relative_url }}">
+        <h2>{{ post.title }}</h2>
+        {% assign _parts = post.content | split: '<p>' %}
+        {% assign _first_p = _parts[1] | split: '</p>' | first | strip_html | strip %}
+        <p>{{ _first_p | truncatewords: 30 }}</p>
+        <div class="post-card-footer">
+          <span class="post-card-date">{{ post.date | date: "%b %-d, %Y" }}</span>
+          <span class="post-card-comments">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M14 1H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3l3 3 3-3h3a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+            {{ post.comments_count | default: 0 }}
+          </span>
+        </div>
+      </a>
+    </article>
+    {% endfor %}
+  </section>
+
+</div>
