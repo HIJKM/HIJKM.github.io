@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(d => { _graphData = d; return d; });
   }
 
+  // toISOString()은 UTC 기준 → 한국(UTC+9)에서 오늘이 어제로 나옴
+  // 로컬 시간 기준 YYYY-MM-DD 반환
+  function localDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
   /* ══════════════════════════════════════
      Graph modal (explore 버튼)
      ══════════════════════════════════════ */
@@ -137,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     for (let i = 9; i >= 0; i--) {
       const d = new Date(today); d.setDate(d.getDate() - i);
-      const key   = d.toISOString().slice(0, 10);
+      const key   = localDate(d);
       const count = dateMap[key] || 0;
       const cell  = document.createElement('div');
       cell.className = 'hm-mini-cell';
@@ -276,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let lastMonth = -1, colIndex = 0;
     const cur = new Date(start);
     while (cur <= today) {
-      const key = cur.toISOString().slice(0, 10);
+      const key = localDate(cur);
       const count = dateMap[key] || 0;
       if (cur.getDay() === 0 && monthsEl) {
         // 이 주(일~토)에 1일이 포함된 경우에만 월 레이블 표시
