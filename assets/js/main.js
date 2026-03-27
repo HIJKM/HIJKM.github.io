@@ -334,6 +334,32 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
+     Share button
+     ══════════════════════════════════════ */
+  const shareBtn    = document.getElementById('share-btn');
+  const shareCopied = document.getElementById('share-copied');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const url   = location.href;
+      const title = document.title;
+      if (navigator.share) {
+        try { await navigator.share({ title, url }); return; } catch (e) { /* cancelled */ }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (e) {
+        // fallback: execCommand
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      }
+      shareCopied?.classList.add('is-visible');
+      setTimeout(() => shareCopied?.classList.remove('is-visible'), 2000);
+    });
+  }
+
+  /* ══════════════════════════════════════
      Post card scroll entrance
      ══════════════════════════════════════ */
   const cards = document.querySelectorAll('.post-card');
