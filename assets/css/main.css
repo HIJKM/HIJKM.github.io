@@ -459,28 +459,6 @@ img { max-width: 100%; display: block; }
   white-space: pre;
 }
 
-/* 헤딩 좌측 레이블 (H1 / H2 / H3) */
-.post-content h2,
-.post-content h3 {
-  position: relative;
-}
-
-.post-content h2::before,
-.post-content h3::before {
-  content: attr(data-heading);
-  position: absolute;
-  left: -2.6rem;
-  top: 0.22em;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.06em;
-  line-height: 1;
-  z-index: 1;
-  user-select: none;
-  pointer-events: none;
-}
 
 /* 인용 */
 .post-content blockquote {
@@ -910,6 +888,13 @@ img { max-width: 100%; display: block; }
   .site-shell {
     width: min(100%, 960px);
     padding: 0 2.5rem;
+  }
+
+  /* 아티클 페이지: Medium처럼 좁은 읽기 컬럼 */
+  .page-post .reading-surface {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 0 4rem;
   }
 
   .home-layout {

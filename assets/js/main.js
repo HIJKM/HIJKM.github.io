@@ -380,12 +380,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ══════════════════════════════════════
-     Heading labels (H1 / H2 / H3 in margin)
-     ══════════════════════════════════════ */
-  document.querySelectorAll('.post-content h2, .post-content h3').forEach(el => {
-    el.setAttribute('data-heading', el.tagName.toLowerCase()); // "h2", "h3"
-  });
 
   /* ══════════════════════════════════════
      Modal D3 Graph
