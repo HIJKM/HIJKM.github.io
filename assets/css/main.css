@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
 .site-logo {
   font-family: var(--font-serif);
   font-size: 3rem;
-  font-weight: 700;
+  font-weight: 600;
   font-style: italic;
   letter-spacing: 0.01em;
   color: var(--ink);
