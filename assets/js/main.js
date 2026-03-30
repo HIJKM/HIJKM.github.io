@@ -1,6 +1,24 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   /* ══════════════════════════════════════
+     Reading progress bar
+     ══════════════════════════════════════ */
+  (function () {
+    const bar = document.getElementById('reading-progress');
+    if (!bar || !document.body.classList.contains('page-post')) return;
+
+    function updateProgress() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+      bar.style.width = pct + '%';
+    }
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  })();
+
+  /* ══════════════════════════════════════
      Shared data cache
      ══════════════════════════════════════ */
   let _graphData = null;

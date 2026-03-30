@@ -70,6 +70,19 @@ img { max-width: 100%; display: block; }
   padding: 0 2rem;
 }
 
+/* 읽기 진행 프로그레스바 */
+#reading-progress {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--ink);
+  opacity: 0.35;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
 .site-logo {
   font-family: var(--font-serif);
   font-size: 3rem;
