@@ -178,8 +178,8 @@
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
     if (options.burstOnMount) {
-      simulation.alpha(1).alphaTarget(0.14).restart();
-      window.setTimeout(() => simulation.alphaTarget(0), 540);
+      simulation.alpha(1).alphaTarget(0.16).restart();
+      window.setTimeout(() => simulation.alphaTarget(0), 760);
     }
 
     const link = mainGroup.append('g')
@@ -197,14 +197,18 @@
       .attr('class', (datum) => `graph-node${currentNode && datum.id === currentNode.id ? ' current' : ''}`)
       .call(dragNode(simulation));
 
+    const nodeFill = (datum) => {
+      if (currentNode && datum.id === currentNode.id) return '#d9dce3';
+      if (linkedIds.has(datum.id)) return '#e4e7eb';
+      return '#d8d8d8';
+    };
+
     node.append('circle')
       .attr('r', (datum) => (currentNode && datum.id === currentNode.id ? 7 : 6))
-      .attr('fill', (datum) => {
-        if (currentNode && datum.id === currentNode.id) return '#d9dce3';
-        if (linkedIds.has(datum.id)) return '#e4e7eb';
-        return '#d8d8d8';
-      })
-      .attr('stroke', 'none');
+      .attr('fill', nodeFill)
+      .attr('stroke', nodeFill)
+      .attr('stroke-width', 4)
+      .attr('paint-order', 'stroke fill');
 
     node.append('text')
       .text((datum) => truncateLabel(datum.title || datum.label, 22))

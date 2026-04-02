@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const closeBtn    = document.getElementById('graph-modal-close');
   const backdrop    = modal?.querySelector('.graph-modal-backdrop');
 
-  let graphInited = false;
   let modalClosingTimer = null;
 
   function openModal() {
@@ -56,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
     modal.classList.remove('is-closing');
     modal?.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    if (!graphInited) { graphInited = true; initModalGraph(); }
+    initModalGraph();
   }
 
   function closeModal() {
@@ -67,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
     modalClosingTimer = window.setTimeout(() => {
       modal.classList.remove('is-open', 'is-closing');
       modalClosingTimer = null;
-    }, 280);
+    }, 540);
   }
 
   exploreBtn?.addEventListener('click', openModal);
