@@ -896,9 +896,11 @@ img { max-width: 100%; display: block; }
 
 .graph-boundary {
   stroke: var(--accent);
-  stroke-width: 1.5;
-  stroke-opacity: 0.45;
-  stroke-dasharray: 8 6;
+  stroke-width: 2;
+  stroke-opacity: 0.8;
+  stroke-dasharray: 10 6;
+  fill: rgba(26, 137, 23, 0.03);
+  pointer-events: none;
 }
 
 .graph-link.highlighted {

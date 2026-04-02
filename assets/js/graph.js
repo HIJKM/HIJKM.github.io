@@ -18,6 +18,8 @@
     viewportBoundaryStrength: 0.11,
     viewportDragResistance: 0.3,
     viewportOverscrollSlack: 96,
+    worldPadding: 220,
+    burstFitPadding: 140,
     labelRevealScale: 1.55,
   };
 
@@ -116,19 +118,6 @@
     return baseRadius;
   }
 
-  function clusterCentroid(nodes) {
-    if (!nodes.length) return { x: 0, y: 0 };
-
-    let x = 0;
-    let y = 0;
-    nodes.forEach((node) => {
-      x += node.x || 0;
-      y += node.y || 0;
-    });
-
-    return { x: x / nodes.length, y: y / nodes.length };
-  }
-
   function graphBounds(nodes, currentNode) {
     if (!nodes.length) {
       return {
@@ -169,28 +158,44 @@
     return delta;
   }
 
-  function panLimits(bounds, width, height) {
-    const padding = GRAPH_CONFIG.viewportBoundaryPadding;
-    const slack = GRAPH_CONFIG.viewportOverscrollSlack;
+  function createWorldBounds(bounds, width, height) {
+    const paddingX = Math.max(GRAPH_CONFIG.worldPadding, width * 0.35);
+    const paddingY = Math.max(GRAPH_CONFIG.worldPadding, height * 0.35);
 
-    let minShiftX = (width - padding) - bounds.maxX;
-    let maxShiftX = padding - bounds.minX;
-    let minShiftY = (height - padding) - bounds.maxY;
-    let maxShiftY = padding - bounds.minY;
+    return {
+      minX: bounds.minX - paddingX,
+      maxX: bounds.maxX + paddingX,
+      minY: bounds.minY - paddingY,
+      maxY: bounds.maxY + paddingY,
+    };
+  }
 
-    if (bounds.maxX - bounds.minX <= width - padding * 2) {
-      const centeredX = width / 2 - (bounds.minX + bounds.maxX) / 2;
-      minShiftX = centeredX - slack;
-      maxShiftX = centeredX + slack;
-    }
+  function worldPanLimits(worldBounds, width, height) {
+    return {
+      minShiftX: width - worldBounds.maxX,
+      maxShiftX: -worldBounds.minX,
+      minShiftY: height - worldBounds.maxY,
+      maxShiftY: -worldBounds.minY,
+    };
+  }
 
-    if (bounds.maxY - bounds.minY <= height - padding * 2) {
-      const centeredY = height / 2 - (bounds.minY + bounds.maxY) / 2;
-      minShiftY = centeredY - slack;
-      maxShiftY = centeredY + slack;
-    }
+  function fitTransformForBounds(bounds, width, height, padding) {
+    const boundsWidth = Math.max(bounds.maxX - bounds.minX, 1);
+    const boundsHeight = Math.max(bounds.maxY - bounds.minY, 1);
+    const scale = Math.max(
+      0.45,
+      Math.min(
+        1.05,
+        Math.min((width - padding * 2) / boundsWidth, (height - padding * 2) / boundsHeight)
+      )
+    );
 
-    return { minShiftX, maxShiftX, minShiftY, maxShiftY };
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const centerY = (bounds.minY + bounds.maxY) / 2;
+
+    return d3.zoomIdentity
+      .translate(width / 2 - centerX * scale, height / 2 - centerY * scale)
+      .scale(scale);
   }
 
   function dragNode(simulation) {
@@ -239,6 +244,13 @@
     let currentScale = 1;
 
     const zoom = d3.zoom()
+      .filter((event) => {
+        if (event.type === 'wheel') return true;
+        if (event.type === 'touchstart' || event.type === 'touchmove' || event.type === 'touchend') {
+          return event.touches && event.touches.length > 1;
+        }
+        return false;
+      })
       .scaleExtent([0.1, 10])
       .on('zoom', (event) => {
         currentScale = event.transform.k;
@@ -314,6 +326,20 @@
 
     mainGroup.classed('labels-visible', currentScale >= GRAPH_CONFIG.labelRevealScale);
 
+    const contentBounds = graphBounds(data.nodes, currentNode);
+    const worldBounds = createWorldBounds(contentBounds, width, height);
+    const panLimits = worldPanLimits(worldBounds, width, height);
+
+    svg.call(
+      zoom.transform,
+      fitTransformForBounds(
+        options.burstOnMount ? worldBounds : contentBounds,
+        width,
+        height,
+        options.burstOnMount ? GRAPH_CONFIG.burstFitPadding : GRAPH_CONFIG.viewportBoundaryPadding
+      )
+    );
+
     node
       .on('mouseover', function (event, datum) {
         const connectedIds = connectedIdsFor(datum, data.links);
@@ -374,20 +400,17 @@
           const dy = event.y - lastDragPoint.y;
           lastDragPoint = { x: event.x, y: event.y };
 
-          const bounds = graphBounds(data.nodes, currentNode);
-          const limits = panLimits(bounds, width, height);
-
           const appliedDx = rubberBandDelta(
             totalPanX + dx * GRAPH_CONFIG.dragShiftFactor,
-            limits.minShiftX,
-            limits.maxShiftX,
+            panLimits.minShiftX,
+            panLimits.maxShiftX,
             dx,
             GRAPH_CONFIG.viewportDragResistance
           );
           const appliedDy = rubberBandDelta(
             totalPanY + dy * GRAPH_CONFIG.dragShiftFactor,
-            limits.minShiftY,
-            limits.maxShiftY,
+            panLimits.minShiftY,
+            panLimits.maxShiftY,
             dy,
             GRAPH_CONFIG.viewportDragResistance
           );
@@ -414,24 +437,21 @@
     );
 
     simulation.on('tick', () => {
-      const bounds = graphBounds(data.nodes, currentNode);
-      const limits = panLimits(bounds, width, height);
-
       if (
-        totalPanX < limits.minShiftX ||
-        totalPanX > limits.maxShiftX ||
-        totalPanY < limits.minShiftY ||
-        totalPanY > limits.maxShiftY
+        totalPanX < panLimits.minShiftX ||
+        totalPanX > panLimits.maxShiftX ||
+        totalPanY < panLimits.minShiftY ||
+        totalPanY > panLimits.maxShiftY
       ) {
-        const pullX = totalPanX < limits.minShiftX
-          ? (limits.minShiftX - totalPanX)
-          : totalPanX > limits.maxShiftX
-            ? (limits.maxShiftX - totalPanX)
+        const pullX = totalPanX < panLimits.minShiftX
+          ? (panLimits.minShiftX - totalPanX)
+          : totalPanX > panLimits.maxShiftX
+            ? (panLimits.maxShiftX - totalPanX)
             : 0;
-        const pullY = totalPanY < limits.minShiftY
-          ? (limits.minShiftY - totalPanY)
-          : totalPanY > limits.maxShiftY
-            ? (limits.maxShiftY - totalPanY)
+        const pullY = totalPanY < panLimits.minShiftY
+          ? (panLimits.minShiftY - totalPanY)
+          : totalPanY > panLimits.maxShiftY
+            ? (panLimits.maxShiftY - totalPanY)
             : 0;
 
         data.nodes.forEach((datum) => {
@@ -443,16 +463,11 @@
         totalPanY += pullY * GRAPH_CONFIG.viewportBoundaryStrength;
       }
 
-      const boundaryX = bounds.minX + limits.minShiftX;
-      const boundaryY = bounds.minY + limits.minShiftY;
-      const boundaryWidth = (bounds.maxX + limits.maxShiftX) - boundaryX;
-      const boundaryHeight = (bounds.maxY + limits.maxShiftY) - boundaryY;
-
       boundaryRect
-        .attr('x', boundaryX)
-        .attr('y', boundaryY)
-        .attr('width', Math.max(boundaryWidth, 0))
-        .attr('height', Math.max(boundaryHeight, 0));
+        .attr('x', worldBounds.minX)
+        .attr('y', worldBounds.minY)
+        .attr('width', Math.max(worldBounds.maxX - worldBounds.minX, 0))
+        .attr('height', Math.max(worldBounds.maxY - worldBounds.minY, 0));
 
       link
         .attr('x1', (datum) => datum.source.x)
