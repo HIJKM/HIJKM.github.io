@@ -2,19 +2,16 @@
   'use strict';
 
   const GRAPH_CONFIG = {
-    repulsion: -760,
-    linkDistance: 12,
-    linkStrength: 0.34,
-    velocityDecay: 0.68,
-    springStrength: 0.35,
-    damping: 0.90,
+    repulsion: -340,
+    linkDistance: 32,
+    linkStrength: 0.12,
+    velocityDecay: 0.62,
     gridSize: 40,
-    centerStrength: 0.08,
-    orbitRadiusRatio: 0.22,
-    orbitStrength: 0.14,
-    dragShiftFactor: 0.38,
-    dragVelocityFactor: 0.22,
-    dragAlphaTarget: 0.24,
+    centerStrength: 0.1,
+    collisionPadding: 10,
+    dragShiftFactor: 0.24,
+    dragVelocityFactor: 0.16,
+    dragAlphaTarget: 0.18,
     labelRevealScale: 1.55,
   };
 
@@ -107,6 +104,12 @@
     });
   }
 
+  function nodeRadius(node, currentNode) {
+    const baseRadius = 4.5 + Math.min(node.linkCount || 0, 8) * 0.55;
+    if (currentNode && node.id === currentNode.id) return baseRadius + 1.5;
+    return baseRadius;
+  }
+
   function dragNode(simulation) {
     return d3.drag()
       .on('start', (event, node) => {
@@ -173,14 +176,7 @@
       )
       .force('charge', d3.forceManyBody().strength(GRAPH_CONFIG.repulsion))
       .force('center', d3.forceCenter(width / 2, height / 2).strength(GRAPH_CONFIG.centerStrength))
-      .force(
-        'orbit',
-        d3.forceRadial(
-          Math.min(width, height) * GRAPH_CONFIG.orbitRadiusRatio,
-          width / 2,
-          height / 2
-        ).strength(GRAPH_CONFIG.orbitStrength)
-      )
+      .force('collision', d3.forceCollide().radius((node) => nodeRadius(node, currentNode) + GRAPH_CONFIG.collisionPadding))
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
     if (options.burstOnMount) {
@@ -210,7 +206,7 @@
     };
 
     node.append('circle')
-      .attr('r', (datum) => (currentNode && datum.id === currentNode.id ? 7 : 6))
+      .attr('r', (datum) => nodeRadius(datum, currentNode))
       .attr('fill', nodeFill)
       .attr('stroke', nodeFill)
       .attr('stroke-width', 4)
@@ -300,26 +296,6 @@
     );
 
     simulation.on('tick', () => {
-      const margin = 10;
-
-      data.nodes.forEach((datum) => {
-        if (datum.x < margin) {
-          datum.vx += (margin - datum.x) * GRAPH_CONFIG.springStrength;
-          datum.vx *= GRAPH_CONFIG.damping;
-        } else if (datum.x > width - margin) {
-          datum.vx -= (datum.x - (width - margin)) * GRAPH_CONFIG.springStrength;
-          datum.vx *= GRAPH_CONFIG.damping;
-        }
-
-        if (datum.y < margin) {
-          datum.vy += (margin - datum.y) * GRAPH_CONFIG.springStrength;
-          datum.vy *= GRAPH_CONFIG.damping;
-        } else if (datum.y > height - margin) {
-          datum.vy -= (datum.y - (height - margin)) * GRAPH_CONFIG.springStrength;
-          datum.vy *= GRAPH_CONFIG.damping;
-        }
-      });
-
       link
         .attr('x1', (datum) => datum.source.x)
         .attr('y1', (datum) => datum.source.y)

@@ -10,6 +10,7 @@ author:
 
 timezone: Asia/Seoul
 lang: ko-KR
+version: "0.6.0"
 
 # Chirpy-style settings
 theme_mode: dark   # light | dark

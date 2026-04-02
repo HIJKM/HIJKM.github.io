@@ -166,10 +166,9 @@ img { max-width: 100%; display: block; }
 
 .home-build-badge {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  color: var(--ink-faint);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.54rem;
+  color: rgba(41, 41, 41, 0.28);
+  letter-spacing: 0.03em;
   line-height: 1.2;
 }
 
