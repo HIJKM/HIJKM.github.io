@@ -14,9 +14,10 @@
     dragShiftFactor: 0.24,
     dragVelocityFactor: 0.16,
     dragAlphaTarget: 0.18,
-    viewportBoundaryInset: 72,
+    viewportBoundaryPadding: 72,
     viewportBoundaryStrength: 0.11,
     viewportDragResistance: 0.3,
+    viewportOverscrollSlack: 96,
     labelRevealScale: 1.55,
   };
 
@@ -128,6 +129,34 @@
     return { x: x / nodes.length, y: y / nodes.length };
   }
 
+  function graphBounds(nodes, currentNode) {
+    if (!nodes.length) {
+      return {
+        minX: 0,
+        maxX: 0,
+        minY: 0,
+        maxY: 0,
+      };
+    }
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    nodes.forEach((node) => {
+      const radius = nodeRadius(node, currentNode) + GRAPH_CONFIG.collisionPadding;
+      const x = node.x || 0;
+      const y = node.y || 0;
+      minX = Math.min(minX, x - radius);
+      maxX = Math.max(maxX, x + radius);
+      minY = Math.min(minY, y - radius);
+      maxY = Math.max(maxY, y + radius);
+    });
+
+    return { minX, maxX, minY, maxY };
+  }
+
   function rubberBandDelta(nextValue, min, max, delta, resistance) {
     if (nextValue < min) {
       const overflow = min - nextValue;
@@ -138,6 +167,30 @@
       return delta / (1 + overflow * resistance * 0.04);
     }
     return delta;
+  }
+
+  function panLimits(bounds, width, height) {
+    const padding = GRAPH_CONFIG.viewportBoundaryPadding;
+    const slack = GRAPH_CONFIG.viewportOverscrollSlack;
+
+    let minShiftX = (width - padding) - bounds.maxX;
+    let maxShiftX = padding - bounds.minX;
+    let minShiftY = (height - padding) - bounds.maxY;
+    let maxShiftY = padding - bounds.minY;
+
+    if (bounds.maxX - bounds.minX <= width - padding * 2) {
+      const centeredX = width / 2 - (bounds.minX + bounds.maxX) / 2;
+      minShiftX = centeredX - slack;
+      maxShiftX = centeredX + slack;
+    }
+
+    if (bounds.maxY - bounds.minY <= height - padding * 2) {
+      const centeredY = height / 2 - (bounds.minY + bounds.maxY) / 2;
+      minShiftY = centeredY - slack;
+      maxShiftY = centeredY + slack;
+    }
+
+    return { minShiftX, maxShiftX, minShiftY, maxShiftY };
   }
 
   function dragNode(simulation) {
@@ -300,6 +353,8 @@
     let dragGridX = 0;
     let dragGridY = 0;
     let lastDragPoint = null;
+    let totalPanX = 0;
+    let totalPanY = 0;
 
     svg.call(
       d3.drag()
@@ -315,26 +370,26 @@
           const dy = event.y - lastDragPoint.y;
           lastDragPoint = { x: event.x, y: event.y };
 
-          const centroid = clusterCentroid(data.nodes);
-          const minX = GRAPH_CONFIG.viewportBoundaryInset;
-          const maxX = width - GRAPH_CONFIG.viewportBoundaryInset;
-          const minY = GRAPH_CONFIG.viewportBoundaryInset;
-          const maxY = height - GRAPH_CONFIG.viewportBoundaryInset;
+          const bounds = graphBounds(data.nodes, currentNode);
+          const limits = panLimits(bounds, width, height);
 
           const appliedDx = rubberBandDelta(
-            centroid.x + dx * GRAPH_CONFIG.dragShiftFactor,
-            minX,
-            maxX,
+            totalPanX + dx * GRAPH_CONFIG.dragShiftFactor,
+            limits.minShiftX,
+            limits.maxShiftX,
             dx,
             GRAPH_CONFIG.viewportDragResistance
           );
           const appliedDy = rubberBandDelta(
-            centroid.y + dy * GRAPH_CONFIG.dragShiftFactor,
-            minY,
-            maxY,
+            totalPanY + dy * GRAPH_CONFIG.dragShiftFactor,
+            limits.minShiftY,
+            limits.maxShiftY,
             dy,
             GRAPH_CONFIG.viewportDragResistance
           );
+
+          totalPanX += appliedDx * GRAPH_CONFIG.dragShiftFactor;
+          totalPanY += appliedDy * GRAPH_CONFIG.dragShiftFactor;
 
           dragGridX += appliedDx;
           dragGridY += appliedDy;
@@ -355,28 +410,33 @@
     );
 
     simulation.on('tick', () => {
-      const centroid = clusterCentroid(data.nodes);
-      const minX = GRAPH_CONFIG.viewportBoundaryInset;
-      const maxX = width - GRAPH_CONFIG.viewportBoundaryInset;
-      const minY = GRAPH_CONFIG.viewportBoundaryInset;
-      const maxY = height - GRAPH_CONFIG.viewportBoundaryInset;
+      const bounds = graphBounds(data.nodes, currentNode);
+      const limits = panLimits(bounds, width, height);
 
-      if (centroid.x < minX || centroid.x > maxX || centroid.y < minY || centroid.y > maxY) {
-        const pullX = centroid.x < minX
-          ? (minX - centroid.x)
-          : centroid.x > maxX
-            ? (maxX - centroid.x)
+      if (
+        totalPanX < limits.minShiftX ||
+        totalPanX > limits.maxShiftX ||
+        totalPanY < limits.minShiftY ||
+        totalPanY > limits.maxShiftY
+      ) {
+        const pullX = totalPanX < limits.minShiftX
+          ? (limits.minShiftX - totalPanX)
+          : totalPanX > limits.maxShiftX
+            ? (limits.maxShiftX - totalPanX)
             : 0;
-        const pullY = centroid.y < minY
-          ? (minY - centroid.y)
-          : centroid.y > maxY
-            ? (maxY - centroid.y)
+        const pullY = totalPanY < limits.minShiftY
+          ? (limits.minShiftY - totalPanY)
+          : totalPanY > limits.maxShiftY
+            ? (limits.maxShiftY - totalPanY)
             : 0;
 
         data.nodes.forEach((datum) => {
           datum.vx = (datum.vx || 0) + pullX * GRAPH_CONFIG.viewportBoundaryStrength;
           datum.vy = (datum.vy || 0) + pullY * GRAPH_CONFIG.viewportBoundaryStrength;
         });
+
+        totalPanX += pullX * GRAPH_CONFIG.viewportBoundaryStrength;
+        totalPanY += pullY * GRAPH_CONFIG.viewportBoundaryStrength;
       }
 
       link
