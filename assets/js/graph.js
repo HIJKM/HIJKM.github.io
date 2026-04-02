@@ -3,15 +3,20 @@
 
   const GRAPH_CONFIG = {
     repulsion: -340,
-    linkDistance: 32,
-    linkStrength: 0.12,
+    linkDistance: 26,
+    linkStrength: 0.14,
     velocityDecay: 0.62,
     gridSize: 40,
-    centerStrength: 0.1,
+    centerStrength: 0.13,
+    clusterRadiusRatio: 0.2,
+    clusterStrength: 0.08,
     collisionPadding: 10,
     dragShiftFactor: 0.24,
     dragVelocityFactor: 0.16,
     dragAlphaTarget: 0.18,
+    viewportBoundaryInset: 72,
+    viewportBoundaryStrength: 0.11,
+    viewportDragResistance: 0.3,
     labelRevealScale: 1.55,
   };
 
@@ -110,6 +115,31 @@
     return baseRadius;
   }
 
+  function clusterCentroid(nodes) {
+    if (!nodes.length) return { x: 0, y: 0 };
+
+    let x = 0;
+    let y = 0;
+    nodes.forEach((node) => {
+      x += node.x || 0;
+      y += node.y || 0;
+    });
+
+    return { x: x / nodes.length, y: y / nodes.length };
+  }
+
+  function rubberBandDelta(nextValue, min, max, delta, resistance) {
+    if (nextValue < min) {
+      const overflow = min - nextValue;
+      return delta / (1 + overflow * resistance * 0.04);
+    }
+    if (nextValue > max) {
+      const overflow = nextValue - max;
+      return delta / (1 + overflow * resistance * 0.04);
+    }
+    return delta;
+  }
+
   function dragNode(simulation) {
     return d3.drag()
       .on('start', (event, node) => {
@@ -176,6 +206,14 @@
       )
       .force('charge', d3.forceManyBody().strength(GRAPH_CONFIG.repulsion))
       .force('center', d3.forceCenter(width / 2, height / 2).strength(GRAPH_CONFIG.centerStrength))
+      .force(
+        'cluster',
+        d3.forceRadial(
+          Math.min(width, height) * GRAPH_CONFIG.clusterRadiusRatio,
+          width / 2,
+          height / 2
+        ).strength(GRAPH_CONFIG.clusterStrength)
+      )
       .force('collision', d3.forceCollide().radius((node) => nodeRadius(node, currentNode) + GRAPH_CONFIG.collisionPadding))
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
@@ -277,16 +315,37 @@
           const dy = event.y - lastDragPoint.y;
           lastDragPoint = { x: event.x, y: event.y };
 
-          dragGridX += dx;
-          dragGridY += dy;
+          const centroid = clusterCentroid(data.nodes);
+          const minX = GRAPH_CONFIG.viewportBoundaryInset;
+          const maxX = width - GRAPH_CONFIG.viewportBoundaryInset;
+          const minY = GRAPH_CONFIG.viewportBoundaryInset;
+          const maxY = height - GRAPH_CONFIG.viewportBoundaryInset;
+
+          const appliedDx = rubberBandDelta(
+            centroid.x + dx * GRAPH_CONFIG.dragShiftFactor,
+            minX,
+            maxX,
+            dx,
+            GRAPH_CONFIG.viewportDragResistance
+          );
+          const appliedDy = rubberBandDelta(
+            centroid.y + dy * GRAPH_CONFIG.dragShiftFactor,
+            minY,
+            maxY,
+            dy,
+            GRAPH_CONFIG.viewportDragResistance
+          );
+
+          dragGridX += appliedDx;
+          dragGridY += appliedDy;
           container.style.setProperty('--graph-grid-x', `${dragGridX % GRAPH_CONFIG.gridSize}px`);
           container.style.setProperty('--graph-grid-y', `${dragGridY % GRAPH_CONFIG.gridSize}px`);
 
           data.nodes.forEach((datum) => {
-            datum.x += dx * GRAPH_CONFIG.dragShiftFactor;
-            datum.y += dy * GRAPH_CONFIG.dragShiftFactor;
-            datum.vx = (datum.vx || 0) + dx * GRAPH_CONFIG.dragVelocityFactor;
-            datum.vy = (datum.vy || 0) + dy * GRAPH_CONFIG.dragVelocityFactor;
+            datum.x += appliedDx * GRAPH_CONFIG.dragShiftFactor;
+            datum.y += appliedDy * GRAPH_CONFIG.dragShiftFactor;
+            datum.vx = (datum.vx || 0) + appliedDx * GRAPH_CONFIG.dragVelocityFactor;
+            datum.vy = (datum.vy || 0) + appliedDy * GRAPH_CONFIG.dragVelocityFactor;
           });
         })
         .on('end', () => {
@@ -296,6 +355,30 @@
     );
 
     simulation.on('tick', () => {
+      const centroid = clusterCentroid(data.nodes);
+      const minX = GRAPH_CONFIG.viewportBoundaryInset;
+      const maxX = width - GRAPH_CONFIG.viewportBoundaryInset;
+      const minY = GRAPH_CONFIG.viewportBoundaryInset;
+      const maxY = height - GRAPH_CONFIG.viewportBoundaryInset;
+
+      if (centroid.x < minX || centroid.x > maxX || centroid.y < minY || centroid.y > maxY) {
+        const pullX = centroid.x < minX
+          ? (minX - centroid.x)
+          : centroid.x > maxX
+            ? (maxX - centroid.x)
+            : 0;
+        const pullY = centroid.y < minY
+          ? (minY - centroid.y)
+          : centroid.y > maxY
+            ? (maxY - centroid.y)
+            : 0;
+
+        data.nodes.forEach((datum) => {
+          datum.vx = (datum.vx || 0) + pullX * GRAPH_CONFIG.viewportBoundaryStrength;
+          datum.vy = (datum.vy || 0) + pullY * GRAPH_CONFIG.viewportBoundaryStrength;
+        });
+      }
+
       link
         .attr('x1', (datum) => datum.source.x)
         .attr('y1', (datum) => datum.source.y)
