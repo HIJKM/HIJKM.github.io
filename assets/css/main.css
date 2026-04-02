@@ -894,6 +894,13 @@ img { max-width: 100%; display: block; }
   transition: stroke-opacity 160ms ease, stroke 160ms ease;
 }
 
+.graph-boundary {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 8 6;
+}
+
 .graph-link.highlighted {
   stroke: #94a3b8;
   stroke-opacity: 1;

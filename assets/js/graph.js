@@ -282,6 +282,10 @@
       .join('line')
       .attr('class', 'graph-link');
 
+    const boundaryRect = mainGroup.append('rect')
+      .attr('class', 'graph-boundary')
+      .attr('fill', 'none');
+
     const node = mainGroup.append('g')
       .attr('class', 'graph-nodes')
       .selectAll('g')
@@ -438,6 +442,17 @@
         totalPanX += pullX * GRAPH_CONFIG.viewportBoundaryStrength;
         totalPanY += pullY * GRAPH_CONFIG.viewportBoundaryStrength;
       }
+
+      const boundaryX = bounds.minX + limits.minShiftX;
+      const boundaryY = bounds.minY + limits.minShiftY;
+      const boundaryWidth = (bounds.maxX + limits.maxShiftX) - boundaryX;
+      const boundaryHeight = (bounds.maxY + limits.maxShiftY) - boundaryY;
+
+      boundaryRect
+        .attr('x', boundaryX)
+        .attr('y', boundaryY)
+        .attr('width', Math.max(boundaryWidth, 0))
+        .attr('height', Math.max(boundaryHeight, 0));
 
       link
         .attr('x1', (datum) => datum.source.x)
