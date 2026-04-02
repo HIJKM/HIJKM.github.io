@@ -12,7 +12,7 @@ title: Home
         <span class="home-stat-num">{{ site.posts.size }}</span>
         <span class="home-stat-meta">
           <span class="home-stat-label">articles</span>
-          <span class="home-build-badge">ver. {{ site.version | default: '0.6.0' }}</span>
+          <span class="home-build-badge">build {{ site.github.build_revision | default: 'e0ac457' | slice: 0, 7 }}</span>
         </span>
       </span>
       <button class="btn-explore-hero" id="explore-btn" aria-haspopup="dialog">
