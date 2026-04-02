@@ -15,6 +15,7 @@
     dragShiftFactor: 0.38,
     dragVelocityFactor: 0.22,
     dragAlphaTarget: 0.24,
+    labelRevealScale: 1.55,
   };
 
   let graphDataPromise = null;
@@ -77,19 +78,6 @@
     tooltip.style.display = 'none';
     container.appendChild(tooltip);
     return tooltip;
-  }
-
-  function createStatus(container, nodes, links) {
-    container.querySelectorAll('.graph-status').forEach((el) => el.remove());
-
-    const status = document.createElement('div');
-    status.className = 'graph-status';
-    status.innerHTML = `
-      <div>SYSTEM_STATUS: ACTIVE</div>
-      <div>NODE_COUNT: ${nodes.length}</div>
-      <div>LINK_COUNT: ${links.length}</div>
-    `;
-    container.appendChild(status);
   }
 
   function connectedIdsFor(node, links) {
@@ -155,7 +143,6 @@
     seedNodePositions(data.nodes, width, height, !!options.burstOnMount);
 
     const tooltip = createTooltip(container);
-    createStatus(container, data.nodes, data.links);
 
     const svg = d3.select(svgElement)
       .attr('width', width)
@@ -163,10 +150,14 @@
 
     const mainGroup = svg.append('g').attr('class', 'main-group');
 
+    let currentScale = 1;
+
     const zoom = d3.zoom()
       .scaleExtent([0.1, 10])
       .on('zoom', (event) => {
+        currentScale = event.transform.k;
         mainGroup.attr('transform', event.transform);
+        mainGroup.classed('labels-visible', currentScale >= GRAPH_CONFIG.labelRevealScale);
       });
 
     svg.call(zoom)
@@ -229,6 +220,8 @@
       .text((datum) => truncateLabel(datum.title || datum.label, 22))
       .attr('x', 10)
       .attr('y', 4);
+
+    mainGroup.classed('labels-visible', currentScale >= GRAPH_CONFIG.labelRevealScale);
 
     node
       .on('mouseover', function (event, datum) {
