@@ -10,7 +10,10 @@ title: Home
     <div class="home-bar">
       <span class="home-stat">
         <span class="home-stat-num">{{ site.posts.size }}</span>
-        <span class="home-stat-label">articles</span>
+        <span class="home-stat-meta">
+          <span class="home-stat-label">articles</span>
+          <span class="home-build-badge">build {{ site.github.build_revision | default: 'f75cb3d' | slice: 0, 7 }}</span>
+        </span>
       </span>
       <button class="btn-explore-hero" id="explore-btn" aria-haspopup="dialog">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
