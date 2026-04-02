@@ -693,9 +693,11 @@ img { max-width: 100%; display: block; }
 .graph-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  transition: opacity 240ms ease, backdrop-filter 240ms ease, -webkit-backdrop-filter 240ms ease, background 240ms ease;
 }
 
 .graph-modal-panel {
@@ -710,12 +712,34 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: modalIn 200ms cubic-bezier(0.2, 0.8, 0.4, 1);
+  opacity: 0;
+  transform: translateY(22px) scale(0.92);
+  transform-origin: 50% 50%;
+  transition: transform 280ms cubic-bezier(0.22, 1.18, 0.36, 1), opacity 220ms ease;
 }
 
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.96) translateY(6px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+#graph-modal.is-open .graph-modal-backdrop {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#graph-modal.is-open .graph-modal-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+#graph-modal.is-closing .graph-modal-backdrop {
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+#graph-modal.is-closing .graph-modal-panel {
+  opacity: 0;
+  transform: translateY(14px) scale(0.95);
 }
 
 .graph-modal-header {
@@ -824,16 +848,14 @@ img { max-width: 100%; display: block; }
 .graph-node circle {
   transition: opacity 160ms ease, fill 160ms ease, stroke 160ms ease;
   cursor: pointer;
-  stroke: transparent;
-  stroke-width: 1.5px;
+  stroke: none;
 }
 
 .graph-node.dimmed circle,
 .graph-node.dimmed text { opacity: 0.15; }
 
 .graph-node.current circle {
-  stroke: #3b82f6;
-  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.18));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.95));
 }
 
 .graph-node text {

@@ -97,6 +97,22 @@
     return ids;
   }
 
+  function seedNodePositions(nodes, width, height, burstOnMount) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    nodes.forEach((node, index) => {
+      const angle = (Math.PI * 2 * index) / Math.max(nodes.length, 1);
+      const radius = burstOnMount ? (6 + (index % 6) * 1.8) : (22 + (index % 8) * 3);
+      const spread = burstOnMount ? 3 : 10;
+
+      node.x = centerX + Math.cos(angle) * radius + (Math.random() - 0.5) * spread;
+      node.y = centerY + Math.sin(angle) * radius + (Math.random() - 0.5) * spread;
+      node.vx = burstOnMount ? Math.cos(angle) * (2.6 + Math.random() * 1.1) : (Math.random() - 0.5) * 0.6;
+      node.vy = burstOnMount ? Math.sin(angle) * (2.6 + Math.random() * 1.1) : (Math.random() - 0.5) * 0.6;
+    });
+  }
+
   function dragNode(simulation) {
     return d3.drag()
       .on('start', (event, node) => {
@@ -130,6 +146,8 @@
     container.style.setProperty('--graph-grid-x', '0px');
     container.style.setProperty('--graph-grid-y', '0px');
 
+    seedNodePositions(data.nodes, width, height, !!options.burstOnMount);
+
     const tooltip = createTooltip(container);
     createStatus(container, data.nodes, data.links);
 
@@ -159,6 +177,11 @@
       .force('charge', d3.forceManyBody().strength(GRAPH_CONFIG.repulsion))
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
+    if (options.burstOnMount) {
+      simulation.alpha(1).alphaTarget(0.14).restart();
+      window.setTimeout(() => simulation.alphaTarget(0), 540);
+    }
+
     const link = mainGroup.append('g')
       .attr('class', 'graph-links')
       .selectAll('line')
@@ -180,7 +203,8 @@
         if (currentNode && datum.id === currentNode.id) return '#d9dce3';
         if (linkedIds.has(datum.id)) return '#e4e7eb';
         return '#d8d8d8';
-      });
+      })
+      .attr('stroke', 'none');
 
     node.append('text')
       .text((datum) => truncateLabel(datum.title || datum.label, 22))

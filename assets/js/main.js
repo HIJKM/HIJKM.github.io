@@ -45,16 +45,29 @@ document.addEventListener('DOMContentLoaded', function () {
   const backdrop    = modal?.querySelector('.graph-modal-backdrop');
 
   let graphInited = false;
+  let modalClosingTimer = null;
 
   function openModal() {
+    if (!modal) return;
+    if (modalClosingTimer) {
+      clearTimeout(modalClosingTimer);
+      modalClosingTimer = null;
+    }
+    modal.classList.remove('is-closing');
     modal?.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     if (!graphInited) { graphInited = true; initModalGraph(); }
   }
 
   function closeModal() {
-    modal?.classList.remove('is-open');
+    if (!modal || !modal.classList.contains('is-open')) return;
+    modal.classList.add('is-closing');
     document.body.style.overflow = '';
+    if (modalClosingTimer) clearTimeout(modalClosingTimer);
+    modalClosingTimer = window.setTimeout(() => {
+      modal.classList.remove('is-open', 'is-closing');
+      modalClosingTimer = null;
+    }, 280);
   }
 
   exploreBtn?.addEventListener('click', openModal);
@@ -412,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
       containerId: 'graph-modal-container',
       svgId: 'knowledge-graph-modal',
       currentUrl: window.CURRENT_PAGE || '/',
+      burstOnMount: true,
       onNodeClick: (href) => {
         closeModal();
         setTimeout(() => { window.location.href = href; }, 180);
