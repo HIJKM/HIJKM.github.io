@@ -2,16 +2,19 @@
   'use strict';
 
   const GRAPH_CONFIG = {
-    repulsion: -900,
-    linkDistance: 10,
-    linkStrength: 0.30,
-    velocityDecay: 0.60,
+    repulsion: -760,
+    linkDistance: 12,
+    linkStrength: 0.34,
+    velocityDecay: 0.68,
     springStrength: 0.35,
     damping: 0.90,
     gridSize: 40,
-    centerStrength: 0.035,
-    orbitRadiusRatio: 0.26,
-    orbitStrength: 0.06,
+    centerStrength: 0.08,
+    orbitRadiusRatio: 0.22,
+    orbitStrength: 0.14,
+    dragShiftFactor: 0.38,
+    dragVelocityFactor: 0.22,
+    dragAlphaTarget: 0.24,
   };
 
   let graphDataPromise = null;
@@ -267,35 +270,38 @@
         window.location.href = href;
       });
 
+    let dragGridX = 0;
+    let dragGridY = 0;
+    let lastDragPoint = null;
+
     svg.call(
       d3.drag()
         .on('start', (event) => {
           if (event.sourceEvent.target !== svgElement) return;
-          simulation.alphaTarget(0.3).restart();
-          data.nodes.forEach((datum) => {
-            datum.baseX = datum.x;
-            datum.baseY = datum.y;
-          });
+          lastDragPoint = { x: event.x, y: event.y };
+          simulation.alphaTarget(GRAPH_CONFIG.dragAlphaTarget).restart();
         })
         .on('drag', (event) => {
-          if (event.sourceEvent.target !== svgElement) return;
+          if (event.sourceEvent.target !== svgElement || !lastDragPoint) return;
 
-          const dx = event.x - event.subject.x;
-          const dy = event.y - event.subject.y;
-          const gridX = `${dx % GRAPH_CONFIG.gridSize}px`;
-          const gridY = `${dy % GRAPH_CONFIG.gridSize}px`;
+          const dx = event.x - lastDragPoint.x;
+          const dy = event.y - lastDragPoint.y;
+          lastDragPoint = { x: event.x, y: event.y };
 
-          container.style.setProperty('--graph-grid-x', gridX);
-          container.style.setProperty('--graph-grid-y', gridY);
+          dragGridX += dx;
+          dragGridY += dy;
+          container.style.setProperty('--graph-grid-x', `${dragGridX % GRAPH_CONFIG.gridSize}px`);
+          container.style.setProperty('--graph-grid-y', `${dragGridY % GRAPH_CONFIG.gridSize}px`);
 
           data.nodes.forEach((datum) => {
-            datum.x = (datum.baseX || 0) + dx;
-            datum.y = (datum.baseY || 0) + dy;
-            datum.vx = (datum.vx || 0) + (dx * 0.002);
-            datum.vy = (datum.vy || 0) + (dy * 0.002);
+            datum.x += dx * GRAPH_CONFIG.dragShiftFactor;
+            datum.y += dy * GRAPH_CONFIG.dragShiftFactor;
+            datum.vx = (datum.vx || 0) + dx * GRAPH_CONFIG.dragVelocityFactor;
+            datum.vy = (datum.vy || 0) + dy * GRAPH_CONFIG.dragVelocityFactor;
           });
         })
         .on('end', () => {
+          lastDragPoint = null;
           simulation.alphaTarget(0);
         })
     );
