@@ -146,10 +146,7 @@
       });
 
     svg.call(zoom)
-      .on('mousedown.zoom', null)
-      .on('touchstart.zoom', null)
-      .on('touchmove.zoom', null)
-      .on('touchend.zoom', null);
+      .on('mousedown.zoom', null);
 
     const simulation = d3.forceSimulation(data.nodes)
       .force(
