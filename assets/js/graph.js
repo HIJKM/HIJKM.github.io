@@ -9,6 +9,9 @@
     springStrength: 0.35,
     damping: 0.90,
     gridSize: 40,
+    centerStrength: 0.035,
+    orbitRadiusRatio: 0.26,
+    orbitStrength: 0.06,
   };
 
   let graphDataPromise = null;
@@ -175,6 +178,15 @@
           .strength(GRAPH_CONFIG.linkStrength)
       )
       .force('charge', d3.forceManyBody().strength(GRAPH_CONFIG.repulsion))
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(GRAPH_CONFIG.centerStrength))
+      .force(
+        'orbit',
+        d3.forceRadial(
+          Math.min(width, height) * GRAPH_CONFIG.orbitRadiusRatio,
+          width / 2,
+          height / 2
+        ).strength(GRAPH_CONFIG.orbitStrength)
+      )
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
     if (options.burstOnMount) {
