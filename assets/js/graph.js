@@ -2,18 +2,15 @@
   'use strict';
 
   const GRAPH_CONFIG = {
-    repulsion: -340,
-    linkDistance: 26,
-    linkStrength: 0.14,
-    velocityDecay: 0.62,
+    repulsion: -900,
+    linkDistance: 10,
+    linkStrength: 0.30,
+    velocityDecay: 0.60,
     gridSize: 40,
-    centerStrength: 0.13,
-    clusterRadiusRatio: 0.2,
-    clusterStrength: 0.08,
+    centerStrength: 0.05,
     collisionPadding: 10,
-    dragShiftFactor: 0.24,
-    dragVelocityFactor: 0.16,
-    dragAlphaTarget: 0.18,
+    dragVelocityFactor: 0.002,
+    dragAlphaTarget: 0.3,
     viewportBoundaryPadding: 72,
     viewportBoundaryStrength: 0.11,
     viewportDragResistance: 0.3,
@@ -270,15 +267,8 @@
           .strength(GRAPH_CONFIG.linkStrength)
       )
       .force('charge', d3.forceManyBody().strength(GRAPH_CONFIG.repulsion))
-      .force('center', d3.forceCenter(width / 2, height / 2).strength(GRAPH_CONFIG.centerStrength))
-      .force(
-        'cluster',
-        d3.forceRadial(
-          Math.min(width, height) * GRAPH_CONFIG.clusterRadiusRatio,
-          width / 2,
-          height / 2
-        ).strength(GRAPH_CONFIG.clusterStrength)
-      )
+      .force('x', d3.forceX(width / 2).strength(GRAPH_CONFIG.centerStrength))
+      .force('y', d3.forceY(height / 2).strength(GRAPH_CONFIG.centerStrength))
       .force('collision', d3.forceCollide().radius((node) => nodeRadius(node, currentNode) + GRAPH_CONFIG.collisionPadding))
       .velocityDecay(GRAPH_CONFIG.velocityDecay);
 
@@ -385,11 +375,19 @@
     let lastDragPoint = null;
     let totalPanX = 0;
     let totalPanY = 0;
+    let dragOriginPanX = 0;
+    let dragOriginPanY = 0;
 
     svg.call(
       d3.drag()
         .on('start', (event) => {
           if (event.sourceEvent.target !== svgElement) return;
+          data.nodes.forEach((datum) => {
+            datum.baseX = datum.x;
+            datum.baseY = datum.y;
+          });
+          dragOriginPanX = totalPanX;
+          dragOriginPanY = totalPanY;
           lastDragPoint = { x: event.x, y: event.y };
           simulation.alphaTarget(GRAPH_CONFIG.dragAlphaTarget).restart();
         })
@@ -398,25 +396,30 @@
 
           const dx = event.x - lastDragPoint.x;
           const dy = event.y - lastDragPoint.y;
+          const totalDx = event.x - event.subject.x;
+          const totalDy = event.y - event.subject.y;
           lastDragPoint = { x: event.x, y: event.y };
 
+          const nextPanX = dragOriginPanX + totalDx;
+          const nextPanY = dragOriginPanY + totalDy;
+
           const appliedDx = rubberBandDelta(
-            totalPanX + dx * GRAPH_CONFIG.dragShiftFactor,
+            nextPanX,
             panLimits.minShiftX,
             panLimits.maxShiftX,
             dx,
             GRAPH_CONFIG.viewportDragResistance
           );
           const appliedDy = rubberBandDelta(
-            totalPanY + dy * GRAPH_CONFIG.dragShiftFactor,
+            nextPanY,
             panLimits.minShiftY,
             panLimits.maxShiftY,
             dy,
             GRAPH_CONFIG.viewportDragResistance
           );
 
-          totalPanX += appliedDx * GRAPH_CONFIG.dragShiftFactor;
-          totalPanY += appliedDy * GRAPH_CONFIG.dragShiftFactor;
+          totalPanX += appliedDx;
+          totalPanY += appliedDy;
 
           dragGridX += appliedDx;
           dragGridY += appliedDy;
@@ -424,8 +427,8 @@
           container.style.setProperty('--graph-grid-y', `${dragGridY % GRAPH_CONFIG.gridSize}px`);
 
           data.nodes.forEach((datum) => {
-            datum.x += appliedDx * GRAPH_CONFIG.dragShiftFactor;
-            datum.y += appliedDy * GRAPH_CONFIG.dragShiftFactor;
+            datum.x = (datum.baseX || 0) + totalPanX;
+            datum.y = (datum.baseY || 0) + totalPanY;
             datum.vx = (datum.vx || 0) + appliedDx * GRAPH_CONFIG.dragVelocityFactor;
             datum.vy = (datum.vy || 0) + appliedDy * GRAPH_CONFIG.dragVelocityFactor;
           });
