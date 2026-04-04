@@ -37,6 +37,58 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
+     Graph modal
+     ══════════════════════════════════════ */
+  const exploreBtn  = document.getElementById('explore-btn');
+  const modal       = document.getElementById('graph-modal');
+  const closeBtn    = document.getElementById('graph-modal-close');
+  const backdrop    = modal?.querySelector('.graph-modal-backdrop');
+  let modalGraphSimulation = null;
+  let modalClosingTimer = null;
+
+  function openModal() {
+    if (!modal) return;
+    if (modalClosingTimer) {
+      clearTimeout(modalClosingTimer);
+      modalClosingTimer = null;
+    }
+    modal.classList.remove('is-closing');
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    initModalGraph();
+  }
+
+  function closeModal() {
+    if (!modal || !modal.classList.contains('is-open')) return;
+    modal.classList.add('is-closing');
+    document.body.style.overflow = '';
+    if (modalClosingTimer) clearTimeout(modalClosingTimer);
+    modalClosingTimer = window.setTimeout(() => {
+      modal.classList.remove('is-open', 'is-closing');
+      modalClosingTimer = null;
+    }, 540);
+  }
+
+  async function initModalGraph() {
+    if (!window.BlogPhysicsGraph?.mount) return;
+    if (modalGraphSimulation) modalGraphSimulation.stop();
+
+    modalGraphSimulation = await window.BlogPhysicsGraph.mount({
+      containerId: 'graph-modal-container',
+      svgId: 'knowledge-graph-modal',
+      currentUrl: window.CURRENT_PAGE || '/',
+      onNodeClick: (href) => {
+        closeModal();
+        setTimeout(() => { window.location.href = href; }, 180);
+      },
+    });
+  }
+
+  exploreBtn?.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  backdrop?.addEventListener('click', closeModal);
+
+  /* ══════════════════════════════════════
      Inline header search
      ══════════════════════════════════════ */
   const headerSearch   = document.getElementById('header-search');
@@ -86,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeSearch(); }
+    if (e.key === 'Escape') { closeSearch(); closeModal(); }
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
   });
 
