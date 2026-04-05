@@ -268,19 +268,28 @@
         window.location.href = href;
       });
 
+    let lastDragPoint = null;
+
     svg.call(d3.drag()
       .on('start', (event) => {
         if (event.sourceEvent.target !== svgElement) return;
         simulation.alphaTarget(0.3).restart();
+        lastDragPoint = { x: event.x, y: event.y };
         data.nodes.forEach((node) => {
           node.baseX = node.x;
           node.baseY = node.y;
         });
       })
       .on('drag', (event) => {
-        if (event.sourceEvent.target !== svgElement) return;
-        const dx = event.x - event.subject.x;
-        const dy = event.y - event.subject.y;
+        if (event.sourceEvent.target !== svgElement || !lastDragPoint) return;
+        const dx = event.x - lastDragPoint.x;
+        const dy = event.y - lastDragPoint.y;
+        lastDragPoint = { x: event.x, y: event.y };
+
+        data.nodes.forEach((node) => {
+          node.baseX = (node.baseX || 0) + dx;
+          node.baseY = (node.baseY || 0) + dy;
+        });
 
         container.style.setProperty('--graph-grid-x', `${dx % GRAPH_CONFIG.gridSize}px`);
         container.style.setProperty('--graph-grid-y', `${dy % GRAPH_CONFIG.gridSize}px`);
@@ -293,6 +302,7 @@
         });
       })
       .on('end', () => {
+        lastDragPoint = null;
         simulation.alphaTarget(0);
       }));
 
