@@ -1270,6 +1270,19 @@ img { max-width: 100%; display: block; }
   white-space: nowrap;
 }
 
+@media (min-width: 681px) {
+  .post-description {
+    font-family: var(--font-sans);
+    line-height: 1.55;
+  }
+
+  .post-content {
+    font-family: var(--font-sans);
+    line-height: 1.62;
+    letter-spacing: -0.01em;
+  }
+}
+
 @media (max-width: 680px) {
   .site-header { padding: 0 1.25rem; height: 68px; }
   .site-logo   { font-size: 2.2rem; }
