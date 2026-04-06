@@ -431,6 +431,9 @@ img { max-width: 100%; display: block; }
   text-decoration-color: rgba(0, 0, 0, 0.25);
   text-underline-offset: 3px;
   transition: text-decoration-color 140ms ease;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .post-content a:hover {
@@ -1289,6 +1292,10 @@ img { max-width: 100%; display: block; }
   .post-title { font-size: 1.75rem; }
   .post-content { font-size: 1.05rem; }
   .post-content h2 { font-size: 1.25rem; }
+  .post-content a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 
   .graph-modal {
     padding: 1rem;
