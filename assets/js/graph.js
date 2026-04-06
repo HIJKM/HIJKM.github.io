@@ -269,11 +269,13 @@
       });
 
     let lastDragPoint = null;
+    let dragStartPoint = null;
 
     svg.call(d3.drag()
       .on('start', (event) => {
         if (event.sourceEvent.target !== svgElement) return;
         simulation.alphaTarget(0.3).restart();
+        dragStartPoint = { x: event.x, y: event.y };
         lastDragPoint = { x: event.x, y: event.y };
         data.nodes.forEach((node) => {
           node.baseX = node.x;
@@ -284,24 +286,22 @@
         if (event.sourceEvent.target !== svgElement || !lastDragPoint) return;
         const dx = event.x - lastDragPoint.x;
         const dy = event.y - lastDragPoint.y;
+        const totalDx = dragStartPoint ? event.x - dragStartPoint.x : 0;
+        const totalDy = dragStartPoint ? event.y - dragStartPoint.y : 0;
         lastDragPoint = { x: event.x, y: event.y };
-
-        data.nodes.forEach((node) => {
-          node.baseX = (node.baseX || 0) + dx;
-          node.baseY = (node.baseY || 0) + dy;
-        });
 
         container.style.setProperty('--graph-grid-x', `${dx % GRAPH_CONFIG.gridSize}px`);
         container.style.setProperty('--graph-grid-y', `${dy % GRAPH_CONFIG.gridSize}px`);
 
         data.nodes.forEach((node) => {
-          node.x = (node.baseX || 0) + dx;
-          node.y = (node.baseY || 0) + dy;
+          node.x = (node.baseX || 0) + totalDx;
+          node.y = (node.baseY || 0) + totalDy;
           node.vx = (node.vx || 0) + (dx * GRAPH_CONFIG.dragVelocityFactor);
           node.vy = (node.vy || 0) + (dy * GRAPH_CONFIG.dragVelocityFactor);
         });
       })
       .on('end', () => {
+        dragStartPoint = null;
         lastDragPoint = null;
         simulation.alphaTarget(0);
       }));
