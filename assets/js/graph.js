@@ -2,14 +2,16 @@
   'use strict';
 
   const GRAPH_CONFIG = {
-    repulsion: -900,
+    repulsion: -820,
     linkDistance: 10,
     linkStrength: 0.30,
     velocityDecay: 0.60,
-    centerStrength: 0.05,
+    centerStrength: 0.08,
     gridSize: 40,
     dragVelocityFactor: 0.12,
-    labelRevealScale: 1.55,
+    labelRevealScale: 1.28,
+    nodeRadius: 6,
+    nodeHitRadius: 14,
   };
 
   let graphDataPromise = null;
@@ -173,7 +175,12 @@
     };
 
     node.append('circle')
-      .attr('r', 6)
+      .attr('class', 'graph-node-hit')
+      .attr('r', GRAPH_CONFIG.nodeHitRadius);
+
+    node.append('circle')
+      .attr('class', 'graph-node-dot')
+      .attr('r', GRAPH_CONFIG.nodeRadius)
       .attr('fill', nodeFill)
       .attr('stroke', nodeFill)
       .attr('stroke-width', 4)
