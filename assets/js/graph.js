@@ -85,47 +85,6 @@
     return ids;
   }
 
-  function graphBounds(nodes) {
-    if (!nodes.length) {
-      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    }
-
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-
-    nodes.forEach((node) => {
-      const x = node.x || 0;
-      const y = node.y || 0;
-      minX = Math.min(minX, x - 16);
-      maxX = Math.max(maxX, x + 16);
-      minY = Math.min(minY, y - 16);
-      maxY = Math.max(maxY, y + 16);
-    });
-
-    return { minX, maxX, minY, maxY };
-  }
-
-  function fitTransform(bounds, width, height, padding) {
-    const boundsWidth = Math.max(bounds.maxX - bounds.minX, 1);
-    const boundsHeight = Math.max(bounds.maxY - bounds.minY, 1);
-    const scale = Math.max(
-      0.45,
-      Math.min(
-        1.05,
-        Math.min((width - padding * 2) / boundsWidth, (height - padding * 2) / boundsHeight)
-      )
-    );
-
-    const centerX = (bounds.minX + bounds.maxX) / 2;
-    const centerY = (bounds.minY + bounds.maxY) / 2;
-
-    return d3.zoomIdentity
-      .translate(width / 2 - centerX * scale, height / 2 - centerY * scale)
-      .scale(scale);
-  }
-
   function dragNode(simulation) {
     return d3.drag()
       .on('start', (event, node) => {
@@ -225,8 +184,7 @@
       .attr('x', 10)
       .attr('y', 4);
 
-    const initialBounds = graphBounds(data.nodes);
-    svg.call(zoom.transform, fitTransform(initialBounds, width, height, 72));
+    svg.call(zoom.transform, d3.zoomIdentity);
     root.classed('labels-visible', currentScale >= GRAPH_CONFIG.labelRevealScale);
 
     node
