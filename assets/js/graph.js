@@ -87,6 +87,20 @@
     return ids;
   }
 
+  function seedNodePositions(nodes, width, height) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    nodes.forEach((node, index) => {
+      const angle = (Math.PI * 2 * index) / Math.max(nodes.length, 1);
+      const radius = 12 + (index % 6) * 3;
+      node.x = centerX + Math.cos(angle) * radius;
+      node.y = centerY + Math.sin(angle) * radius;
+      node.vx = 0;
+      node.vy = 0;
+    });
+  }
+
   function dragNode(simulation) {
     return d3.drag()
       .on('start', (event, node) => {
@@ -119,6 +133,8 @@
     d3.select(svgElement).selectAll('*').remove();
     container.style.setProperty('--graph-grid-x', '0px');
     container.style.setProperty('--graph-grid-y', '0px');
+
+    seedNodePositions(data.nodes, width, height);
 
     const tooltip = createTooltip(container);
     const svg = d3.select(svgElement)
