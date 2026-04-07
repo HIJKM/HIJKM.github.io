@@ -270,25 +270,37 @@
       });
 
     let lastDragPoint = null;
+    let dragStartPoint = null;
 
     svg.call(d3.drag()
       .on('start', (event) => {
         if (event.sourceEvent.target !== svgElement) return;
         simulation.alphaTarget(0.3).restart();
+        dragStartPoint = { x: event.x, y: event.y };
         lastDragPoint = { x: event.x, y: event.y };
+        data.nodes.forEach((node) => {
+          node.baseX = Number.isFinite(node.x) ? node.x : width / 2;
+          node.baseY = Number.isFinite(node.y) ? node.y : height / 2;
+          node.fx = node.baseX;
+          node.fy = node.baseY;
+        });
       })
       .on('drag', (event) => {
-        if (event.sourceEvent.target !== svgElement || !lastDragPoint) return;
+        if (event.sourceEvent.target !== svgElement || !lastDragPoint || !dragStartPoint) return;
         const dx = event.x - lastDragPoint.x;
         const dy = event.y - lastDragPoint.y;
+        const totalDx = event.x - dragStartPoint.x;
+        const totalDy = event.y - dragStartPoint.y;
         lastDragPoint = { x: event.x, y: event.y };
 
         container.style.setProperty('--graph-grid-x', `${dx % GRAPH_CONFIG.gridSize}px`);
         container.style.setProperty('--graph-grid-y', `${dy % GRAPH_CONFIG.gridSize}px`);
 
         data.nodes.forEach((node) => {
-          node.x = (node.x || 0) + dx;
-          node.y = (node.y || 0) + dy;
+          node.fx = (node.baseX || 0) + totalDx;
+          node.fy = (node.baseY || 0) + totalDy;
+          node.x = node.fx;
+          node.y = node.fy;
           const vx = (node.vx || 0) + (dx * GRAPH_CONFIG.dragVelocityFactor);
           const vy = (node.vy || 0) + (dy * GRAPH_CONFIG.dragVelocityFactor);
           node.vx = Number.isFinite(vx) ? vx : 0;
@@ -297,7 +309,12 @@
         simulation.alpha(0.12).restart();
       })
       .on('end', () => {
+        dragStartPoint = null;
         lastDragPoint = null;
+        data.nodes.forEach((node) => {
+          node.fx = null;
+          node.fy = null;
+        });
         simulation.alphaTarget(0);
       }));
 
