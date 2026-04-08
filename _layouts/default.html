@@ -41,11 +41,19 @@
     </main>
   </div>
 
+  <div id="graph-modal" aria-hidden="true">
+    <div class="graph-modal-backdrop"></div>
+    <div class="graph-modal-panel" role="dialog" aria-modal="true" aria-label="File explorer">
+      <div id="graph-modal-mount" class="graph-modal-mount"></div>
+    </div>
+  </div>
+
   <script>
     window.CURRENT_PAGE = "{{ page.url }}";
     window.SITE_BASEURL = "{{ site.baseurl }}";
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="{{ '/assets/js/graph.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </body>
 </html>
