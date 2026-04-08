@@ -727,6 +727,10 @@ img { max-width: 100%; display: block; }
 }
 
 #graph-modal.is-open { display: flex; }
+#graph-modal.is-preparing {
+  display: flex;
+  visibility: hidden;
+}
 
 .graph-modal-backdrop {
   position: absolute;

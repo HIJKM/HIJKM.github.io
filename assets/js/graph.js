@@ -1017,6 +1017,7 @@
     }
 
     function closeModal() {
+      modal.classList.remove('is-preparing');
       modal.classList.remove('is-open');
       modal.classList.add('is-closing');
       modal.setAttribute('aria-hidden', 'true');
@@ -1026,6 +1027,7 @@
       closeTimer = window.setTimeout(() => {
         destroyExplorer();
         modal.classList.remove('is-closing');
+        modal.classList.remove('is-preparing');
       }, 420);
     }
 
@@ -1035,12 +1037,19 @@
       fetchGraphData().then((data) => {
         bodyState = lockBodyScroll();
         modal.classList.remove('is-closing');
-        modal.classList.add('is-open');
+        modal.classList.add('is-preparing');
         modal.setAttribute('aria-hidden', 'false');
         explorer = new GraphExplorer(mount, {
           nodes: data.nodes,
           links: data.links,
           onClose: closeModal,
+        });
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            if (!explorer) return;
+            modal.classList.remove('is-preparing');
+            modal.classList.add('is-open');
+          });
         });
       }).catch(() => {
         mount.innerHTML = '<div class="graph-engine graph-engine-empty"><p>Unable to load graph data.</p></div>';
