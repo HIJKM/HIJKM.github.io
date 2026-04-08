@@ -30,6 +30,10 @@
     return typeof endpoint === 'string' ? endpoint : endpoint.id;
   }
 
+  function isMobileViewport() {
+    return window.matchMedia('(max-width: 680px)').matches;
+  }
+
   function formatNodeLabel(label) {
     if (!label) return '';
     return label.length > 10 ? `${label.slice(0, 10)}...` : label;
@@ -69,8 +73,9 @@
     const graphWidth = maxX - minX + padding * 2;
     const graphHeight = maxY - minY + padding * 2;
     const scale = Math.min(width / graphWidth, height / graphHeight, 1.2);
+    const mobileAdjustedScale = isMobileViewport() ? scale * 0.88 : scale;
 
-    return Math.max(0.05, Math.min(scale, 12));
+    return Math.max(0.05, Math.min(mobileAdjustedScale, 12));
   }
 
   function mergeNodesForSimulation(incomingNodes, existingNodes, width, height) {
@@ -405,6 +410,16 @@
           this.connectorPath.style.strokeDasharray = 'none';
           this.connectorPath.style.strokeDashoffset = '0';
         }
+        this.connectorAnimatedNodeId = null;
+        this.clearConnectorResetTimer();
+        return;
+      }
+
+      if (isMobileViewport()) {
+        this.connectorPath.setAttribute('d', '');
+        this.connectorPath.style.transition = 'none';
+        this.connectorPath.style.strokeDasharray = 'none';
+        this.connectorPath.style.strokeDashoffset = '0';
         this.connectorAnimatedNodeId = null;
         this.clearConnectorResetTimer();
         return;
