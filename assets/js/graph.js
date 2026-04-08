@@ -135,7 +135,9 @@
       this.connectorAnimatedNodeId = null;
       this.connectorResetTimer = null;
       this.tooltipRevealTimer = null;
+      this.openFitTimer = null;
       this.initialFitPerformed = false;
+      this.initialAnimatedFitPerformed = false;
       this.previousGraphSize = { nodeCount: 0, linkCount: 0 };
       this.resizeObserver = null;
       this.simulation = null;
@@ -251,6 +253,13 @@
       if (this.connectorResetTimer !== null) {
         window.clearTimeout(this.connectorResetTimer);
         this.connectorResetTimer = null;
+      }
+    }
+
+    clearOpenFitTimer() {
+      if (this.openFitTimer !== null) {
+        window.clearTimeout(this.openFitTimer);
+        this.openFitTimer = null;
       }
     }
 
@@ -834,6 +843,16 @@
         this.initialFitPerformed = true;
       }
 
+      if (!this.initialAnimatedFitPerformed && nextNodes.length > 0) {
+        this.clearOpenFitTimer();
+        this.openFitTimer = window.setTimeout(() => {
+          if (this.isDestroyed) return;
+          this.fitToView(false);
+          this.initialAnimatedFitPerformed = true;
+          this.openFitTimer = null;
+        }, 260);
+      }
+
       this.syncActiveNode();
     }
 
@@ -841,6 +860,7 @@
       this.isDestroyed = true;
       this.clearTooltipRevealTimer();
       this.clearConnectorResetTimer();
+      this.clearOpenFitTimer();
       if (this.resizeObserver) {
         this.resizeObserver.disconnect();
       }
