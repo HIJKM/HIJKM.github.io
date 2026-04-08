@@ -322,7 +322,7 @@
         return;
       }
 
-      const deltaY = gesture.startY - event.clientY;
+      const deltaY = event.clientY - gesture.startY;
       const scaleFactor = Math.exp(deltaY * 0.01);
       const nextScale = Math.max(0.05, Math.min(12, gesture.startTransform.k * scaleFactor));
       const nextTransform = d3.zoomIdentity
