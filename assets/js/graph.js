@@ -1,7 +1,7 @@
 (function () {
   const PHYSICS = {
     repulsion: -Math.pow(10, 3),
-    linkDistance: 20,
+    linkDistance: 28,
     linkStrength: 1,
     velocityDecay: 0.45,
     centerStrength: 0.1,
