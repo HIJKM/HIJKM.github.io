@@ -138,6 +138,7 @@
       this.openFitTimer = null;
       this.initialFitPerformed = false;
       this.initialAnimatedFitPerformed = false;
+      this.postOpenFitPerformed = false;
       this.previousGraphSize = { nodeCount: 0, linkCount: 0 };
       this.resizeObserver = null;
       this.simulation = null;
@@ -856,6 +857,20 @@
       this.syncActiveNode();
     }
 
+    runPostOpenFit() {
+      if (this.postOpenFitPerformed || this.graphNodes.length === 0) {
+        return;
+      }
+
+      this.postOpenFitPerformed = true;
+      this.clearOpenFitTimer();
+      this.openFitTimer = window.setTimeout(() => {
+        if (this.isDestroyed) return;
+        this.fitToView(false);
+        this.openFitTimer = null;
+      }, 40);
+    }
+
     destroy() {
       this.isDestroyed = true;
       this.clearTooltipRevealTimer();
@@ -939,6 +954,11 @@
           links: data.links,
           onClose: closeModal,
         });
+        window.setTimeout(() => {
+          if (explorer) {
+            explorer.runPostOpenFit();
+          }
+        }, 340);
       }).catch(() => {
         mount.innerHTML = '<div class="graph-engine graph-engine-empty"><p>Unable to load graph data.</p></div>';
         bodyState = lockBodyScroll();
