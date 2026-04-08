@@ -15,6 +15,8 @@
   const TOOLTIP_SURFACE = 'rgba(29, 29, 29, 0.94)';
   const CONNECTOR_DRAW_MS = 180;
   const TOOLTIP_REVEAL_DELAY_MS = 110;
+  const DOUBLE_TAP_WINDOW_MS = 280;
+  const DOUBLE_TAP_MAX_MOVE_PX = 32;
 
   let graphDataPromise = null;
 
@@ -149,6 +151,12 @@
       this.linkSelection = null;
       this.nodeSelection = null;
       this.isDestroyed = false;
+      this.lastTouchTapTime = 0;
+      this.lastTouchTapPoint = null;
+      this.doubleTapZoomGesture = null;
+      this.boundTouchPointerDown = (event) => this.handleTouchPointerDown(event);
+      this.boundTouchPointerMove = (event) => this.handleTouchPointerMove(event);
+      this.boundTouchPointerUp = (event) => this.handleTouchPointerUp(event);
 
       this.renderShell();
       this.bindElements();
@@ -265,6 +273,90 @@
         window.clearTimeout(this.openFitTimer);
         this.openFitTimer = null;
       }
+    }
+
+    handleTouchPointerDown(event) {
+      if (!isMobileViewport() || event.pointerType !== 'touch' || !this.zoom || !this.svgElement) {
+        return;
+      }
+
+      const now = Date.now();
+      const point = { x: event.clientX, y: event.clientY };
+      const isSecondTap =
+        this.lastTouchTapPoint &&
+        now - this.lastTouchTapTime <= DOUBLE_TAP_WINDOW_MS &&
+        Math.hypot(point.x - this.lastTouchTapPoint.x, point.y - this.lastTouchTapPoint.y) <= DOUBLE_TAP_MAX_MOVE_PX;
+
+      this.lastTouchTapTime = now;
+      this.lastTouchTapPoint = point;
+
+      if (!isSecondTap) {
+        this.doubleTapZoomGesture = null;
+        return;
+      }
+
+      const rect = this.svgElement.getBoundingClientRect();
+      const focusX = event.clientX - rect.left;
+      const focusY = event.clientY - rect.top;
+      const startTransform = this.currentTransform;
+      const graphFocusX = (focusX - startTransform.x) / startTransform.k;
+      const graphFocusY = (focusY - startTransform.y) / startTransform.k;
+
+      this.doubleTapZoomGesture = {
+        pointerId: event.pointerId,
+        startY: event.clientY,
+        focusX,
+        focusY,
+        graphFocusX,
+        graphFocusY,
+        startTransform,
+      };
+
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    handleTouchPointerMove(event) {
+      const gesture = this.doubleTapZoomGesture;
+      if (!gesture || event.pointerType !== 'touch' || event.pointerId !== gesture.pointerId || !this.zoom) {
+        return;
+      }
+
+      const deltaY = gesture.startY - event.clientY;
+      const scaleFactor = Math.exp(deltaY * 0.01);
+      const nextScale = Math.max(0.05, Math.min(12, gesture.startTransform.k * scaleFactor));
+      const nextTransform = d3.zoomIdentity
+        .translate(gesture.focusX, gesture.focusY)
+        .scale(nextScale)
+        .translate(-gesture.graphFocusX, -gesture.graphFocusY);
+
+      this.svg.interrupt();
+      this.svg.call(this.zoom.transform, nextTransform);
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    handleTouchPointerUp(event) {
+      const gesture = this.doubleTapZoomGesture;
+      if (!gesture || event.pointerId !== gesture.pointerId) {
+        return;
+      }
+
+      this.doubleTapZoomGesture = null;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    bindMobileZoomGesture() {
+      if (!this.svgElement) return;
+      this.svgElement.removeEventListener('pointerdown', this.boundTouchPointerDown);
+      this.svgElement.removeEventListener('pointermove', this.boundTouchPointerMove);
+      this.svgElement.removeEventListener('pointerup', this.boundTouchPointerUp);
+      this.svgElement.removeEventListener('pointercancel', this.boundTouchPointerUp);
+      this.svgElement.addEventListener('pointerdown', this.boundTouchPointerDown, { passive: false });
+      this.svgElement.addEventListener('pointermove', this.boundTouchPointerMove, { passive: false });
+      this.svgElement.addEventListener('pointerup', this.boundTouchPointerUp, { passive: false });
+      this.svgElement.addEventListener('pointercancel', this.boundTouchPointerUp, { passive: false });
     }
 
     updateViewport(transform) {
@@ -690,6 +782,7 @@
 
       this.svg.call(this.zoom);
       this.svg.call(this.zoom.transform, this.currentTransform);
+      this.bindMobileZoomGesture();
 
       this.simulation = d3.forceSimulation()
         .force(
@@ -874,6 +967,12 @@
       if (this.svg) {
         this.svg.interrupt();
         this.svg.on('.zoom', null);
+      }
+      if (this.svgElement) {
+        this.svgElement.removeEventListener('pointerdown', this.boundTouchPointerDown);
+        this.svgElement.removeEventListener('pointermove', this.boundTouchPointerMove);
+        this.svgElement.removeEventListener('pointerup', this.boundTouchPointerUp);
+        this.svgElement.removeEventListener('pointercancel', this.boundTouchPointerUp);
       }
       this.root.innerHTML = '';
     }
