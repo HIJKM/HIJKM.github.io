@@ -30,6 +30,11 @@
     return typeof endpoint === 'string' ? endpoint : endpoint.id;
   }
 
+  function formatNodeLabel(label) {
+    if (!label) return '';
+    return label.length > 10 ? `${label.slice(0, 10)}...` : label;
+  }
+
   function normalizeLinks(links) {
     return links.map((link) => ({
       ...link,
@@ -786,7 +791,7 @@
               .attr('opacity', this.nodeLabelsVisible ? 0.92 : 0)
               .style('display', this.nodeLabelsVisible ? null : 'none')
               .style('pointer-events', 'none')
-              .text((d) => d.label);
+              .text((d) => formatNodeLabel(d.label));
 
             return node;
           },
@@ -794,7 +799,7 @@
           (exit) => exit.remove()
         );
 
-      this.nodeSelection.select('text.node-label').text((d) => d.label);
+      this.nodeSelection.select('text.node-label').text((d) => formatNodeLabel(d.label));
       this.updateNodeLabelVisibility(true);
 
       if (this.nodeCountElement) {
