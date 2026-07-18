@@ -11,9 +11,34 @@
   --accent:     #1a8917;
   --content-w:  728px;
   --list-w:     680px;
-  --font-sans:  "DM Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-serif: "Lora", Georgia, "Times New Roman", serif;
+  --font-sans:  "Anthropic Sans", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Anthropic Serif", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", Georgia, "Times New Roman", serif;
   --font-mono:  "JetBrains Mono", "Fira Code", monospace;
+}
+
+@font-face {
+  font-family: "Anthropic Sans";
+  src: url("/assets/fonts/anthropic/AnthropicSans_Roman_Web.reference.woff2") format("woff2");
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Anthropic Sans";
+  src: url("/assets/fonts/anthropic/AnthropicSans_Italic_Web.reference.woff2") format("woff2");
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Anthropic Serif";
+  src: url("/assets/fonts/anthropic/AnthropicSerif_Roman_Web.reference.woff2") format("woff2");
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Anthropic Serif";
+  src: url("/assets/fonts/anthropic/AnthropicSerif_Italic_Web.reference.woff2") format("woff2");
+  font-style: italic;
+  font-display: swap;
 }
 
 /* ============================================================
@@ -27,8 +52,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-sans);
-  line-height: 1.6;
+  font-family: var(--font-serif);
+  line-height: 1.55;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -265,11 +290,11 @@ img { max-width: 100%; display: block; }
    Post page
    ============================================================ */
 .reading-surface {
-  padding: 1.5rem 0.75rem 2.5rem;
+  padding: 2.25rem 0 3rem;
 }
 
 .post-header {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .post-kicker {
@@ -283,12 +308,12 @@ img { max-width: 100%; display: block; }
 
 .post-title {
   font-family: var(--font-sans);
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 31px;
+  font-weight: 620;
   color: var(--ink);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin: 0 0 0.45rem;
+  letter-spacing: 0;
+  line-height: 1.08;
+  margin: 0 0 1.75rem;
 }
 
 .post-description {
@@ -302,23 +327,94 @@ img { max-width: 100%; display: block; }
 
 .post-meta {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
+  gap: 0.875rem;
+  min-height: 46px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 17px;
+  font-weight: 620;
+  line-height: 1;
+}
+
+.author-name {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 520;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.read-meta,
+.meta-dot {
   color: var(--ink-muted);
-  padding: 0.85rem 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.meta-dot { margin: 0 -0.375rem; }
+
+.article-kicker {
+  display: inline-flex;
+  margin: 0 0 1.5rem;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 620;
+  line-height: 1.2;
+}
+
+.article-kicker:hover {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.engagement-bar {
+  width: 100%;
+  min-height: 54px;
+  margin: 1.875rem 0 2rem;
+  padding: 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.post-meta a {
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.post-tags a {
+  color: var(--ink-muted);
+}
+
+.post-tags a:hover {
   color: var(--accent);
-}
-
-.post-meta a:hover {
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ============================================================
@@ -327,30 +423,29 @@ img { max-width: 100%; display: block; }
 .post-share {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin: 1.25rem 0 1.5rem;
+  gap: 0.5rem;
+  flex: 0 0 auto;
 }
 
 .btn-share {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 500;
   color: var(--ink-muted);
   background: none;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 999px;
-  padding: 0.35rem 0.85rem;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   cursor: pointer;
-  letter-spacing: 0.02em;
-  transition: border-color 140ms ease, color 140ms ease;
+  transition: color 140ms ease, background 140ms ease;
 }
 
 .btn-share:hover {
-  border-color: rgba(0, 0, 0, 0.3);
-  color: var(--ink);
+  color: var(--accent);
+  background: rgba(217, 119, 87, 0.1);
 }
 
 .share-copied {
@@ -367,8 +462,9 @@ img { max-width: 100%; display: block; }
    ============================================================ */
 .post-content {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
-  line-height: 1.58;
+  font-size: 17px;
+  line-height: 1.62;
+  letter-spacing: 0;
   color: var(--ink-soft);
   min-width: 0;
 }
@@ -380,49 +476,37 @@ img { max-width: 100%; display: block; }
 
 .post-content h2 {
   font-family: var(--font-sans);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 25px;
+  font-weight: 590;
   color: var(--ink);
-  letter-spacing: -0.02em;
-  margin: 2.5rem 0 0.9rem;
-  line-height: 1.25;
+  letter-spacing: 0;
+  margin: 1.65em 0 0.55em;
+  line-height: 1.18;
 }
 
 .post-content h3 {
   font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 590;
   color: var(--ink);
-  margin: 2rem 0 0.7rem;
+  margin: 1.45em 0 0.45em;
+  line-height: 1.18;
 }
 
-.post-content p { margin: 0 0 0.85rem; }
+.post-content p { margin: 0 0 1.05em; }
 
 .post-content ul {
-  padding-left: 1.25rem;
-  margin: 0 0 1.2rem;
-  list-style: none;
+  padding-left: 1.3em;
+  margin: 0 0 1.05em;
+  list-style: disc;
 }
 
 .post-content ol {
-  padding-left: 1.5rem;
-  margin: 0 0 1.2rem;
+  padding-left: 1.3em;
+  margin: 0 0 1.05em;
 }
 
-.post-content ul > li {
-  position: relative;
-}
-
-.post-content ul > li::before {
-  content: '—';
-  position: absolute;
-  left: -1.25rem;
-  color: var(--ink-muted);
-  font-style: normal;
-  font-size: 0.9em;
-}
-
-.post-content li + li { margin-top: 0.5rem; }
+.post-content li { margin: 0.25em 0; }
 
 /* 링크 */
 .post-content a {
@@ -455,8 +539,8 @@ img { max-width: 100%; display: block; }
   margin: 1.75rem 0;
   max-width: 100%;
   padding: 0;
-  background: #f8f8f8;
-  border: 1px solid #e8e8e8;
+  background: var(--ink);
+  border: 0;
   border-radius: 4px;
   overflow-x: auto;
 }
@@ -492,17 +576,16 @@ img { max-width: 100%; display: block; }
   padding: 0;
   background: transparent;
   border: none;
-  color: var(--ink);
+  color: #fff;
   white-space: pre;
 }
 
 
 /* 인용 */
 .post-content blockquote {
-  margin: 1.1rem 0;
-  padding: 0 0 0 1rem;
-  border-left: 2px solid rgba(0,0,0,0.18);
-  font-style: italic;
+  margin: 1em 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--accent);
   color: var(--ink-muted);
 }
 
@@ -530,20 +613,35 @@ img { max-width: 100%; display: block; }
   max-width: 100%;
 }
 
+.post-content img,
+.post-content video {
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.post-content iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin: 1rem 0;
+  border: 0;
+  border-radius: 4px;
+}
+
 .post-content th {
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.6rem 0.75rem;
-  border-bottom: 2px solid var(--ink);
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--line);
   text-align: left;
   color: var(--ink);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .post-content td {
-  padding: 0.65rem 0.75rem;
+  padding: 0.625rem 0.75rem;
   border-bottom: 1px solid var(--line);
   color: var(--ink-soft);
 }
@@ -551,12 +649,12 @@ img { max-width: 100%; display: block; }
 .post-content hr {
   border: none;
   border-top: 1px solid var(--line);
-  margin: 2.5rem auto;
-  width: 40%;
+  margin: 3.5rem auto;
+  width: 60px;
 }
 
 /* 강조 */
-.post-content strong { color: var(--ink); font-weight: 700; }
+.post-content strong { color: var(--ink); font-weight: 540; }
 
 /* ============================================================
    Taxonomy pages (tags, categories)
@@ -1075,9 +1173,9 @@ img { max-width: 100%; display: block; }
 
   /* 아티클 페이지: Medium처럼 좁은 읽기 컬럼 */
   .page-post .reading-surface {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
-    padding: 2.5rem 0 4rem;
+    padding: 2.25rem 3rem 4rem;
   }
 
   .home-layout {
@@ -1386,9 +1484,9 @@ img { max-width: 100%; display: block; }
   }
 
   .post-content {
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
     line-height: 1.62;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 }
 
@@ -1400,7 +1498,7 @@ img { max-width: 100%; display: block; }
   .site-shell  { padding: 0 1rem; }
   .home-bar    { padding: 1.25rem 0; }
   .home-stat-num { font-size: 1.4rem; }
-  .reading-surface { padding: 1.5rem 0.5rem 3rem; }
+  .reading-surface { padding: 2rem 0 3rem; }
   .post-content h1[data-heading]::before,
   .post-content h2[data-heading]::before,
   .post-content h3[data-heading]::before { display: none; }
@@ -1411,9 +1509,15 @@ img { max-width: 100%; display: block; }
 
   .post-card-link h2 { font-size: 1.3rem; }
 
-  .post-title { font-size: 1.75rem; }
-  .post-content { font-size: 1.05rem; }
-  .post-content h2 { font-size: 1.25rem; }
+  .post-title { font-size: 26px; line-height: 1.1; }
+  .post-meta { gap: 0.625rem; flex-wrap: wrap; }
+  .author-avatar { width: 38px; height: 38px; font-size: 15px; }
+  .author-name { font-size: 17px; }
+  .read-meta, .meta-dot { font-size: 13px; }
+  .engagement-bar { min-height: 50px; margin: 1.5rem 0 1.75rem; }
+  .post-content { font-size: 16px; line-height: 1.66; }
+  .post-content h2 { font-size: 22px; }
+  .post-content h3 { font-size: 18px; }
   .post-content a {
     overflow-wrap: anywhere;
     word-break: break-word;
