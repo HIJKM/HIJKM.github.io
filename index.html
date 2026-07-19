@@ -15,7 +15,7 @@ title: Home
           <span class="home-build-badge">build {{ site.github.build_revision | default: 'e0ac457' | slice: 0, 7 }}</span>
         </span>
       </span>
-      <button class="btn-explore-hero" id="open-graph-modal" type="button">
+      <a class="btn-explore-hero" href="{{ '/graph/' | relative_url }}">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
           <circle cx="4.2" cy="4.2" r="1.9" fill="currentColor"/>
           <circle cx="13.8" cy="4.2" r="1.9" fill="currentColor"/>
@@ -23,7 +23,7 @@ title: Home
           <path d="M5.7 5.2 8 12M12.3 5.2 10 12M6 4.2h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
         </svg>
         <span>Open Graph View</span>
-      </button>
+      </a>
     </div>
 
     <details class="heatmap-section" id="heatmap-section">

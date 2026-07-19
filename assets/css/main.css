@@ -1004,11 +1004,13 @@ img { max-width: 100%; display: block; }
 }
 
 .graph-engine-close {
-  width: 36px;
+  min-width: 36px;
   height: 36px;
+  padding: 0 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
@@ -1022,6 +1024,12 @@ img { max-width: 100%; display: block; }
 .graph-engine-close:hover {
   background: rgba(255, 255, 255, 0.35);
   transform: translateY(-1px);
+}
+
+.graph-engine-close span {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .graph-engine-main {
@@ -1160,6 +1168,45 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   font-family: var(--font-sans);
   color: var(--ink-muted);
+}
+
+.graph-error-back {
+  color: var(--ink);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 그래프 화면은 모달 대신 viewport 전체를 사용한다. */
+body.page-graph {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.page-graph .site-header,
+body.page-graph .search-dropdown {
+  display: none;
+}
+
+body.page-graph .site-shell,
+body.page-graph #main-content,
+body.page-graph .graph-scene,
+body.page-graph .graph-surface,
+body.page-graph .graph-page-root {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+body.page-graph .graph-surface {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--bg);
 }
 
 /* ============================================================

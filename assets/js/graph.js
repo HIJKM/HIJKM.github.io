@@ -182,10 +182,11 @@
             </div>
             ${
               this.options.onClose
-                ? `<button class="graph-engine-close" type="button" aria-label="Close explorer" title="Close">
+                ? `<button class="graph-engine-close" type="button" aria-label="Back to list" title="Back to list">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <path d="M4 4l8 8M12 4 4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
+                    <span>목록</span>
                   </button>`
                 : '<div class="graph-engine-spacer"></div>'
             }
@@ -1079,10 +1080,16 @@
         new GraphExplorer(mount, {
           nodes: data.nodes,
           links: data.links,
+          onClose: () => {
+            window.location.href = `${getBaseUrl()}/`;
+          },
         });
       })
       .catch(() => {
-        mount.innerHTML = '<div class="graph-engine graph-engine-empty"><p>Unable to load graph data.</p></div>';
+        mount.innerHTML = `<div class="graph-engine graph-engine-empty">
+          <a class="graph-error-back" href="${getBaseUrl()}/">← 목록으로 돌아가기</a>
+          <p>Unable to load graph data.</p>
+        </div>`;
       });
   }
 

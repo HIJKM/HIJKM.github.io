@@ -6,7 +6,7 @@
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" />
 </head>
-<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}">
+<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}{% if page.url == '/graph/' %} page-graph{% endif %}">
 
   <header class="site-header">
     <div id="reading-progress"></div>
@@ -36,13 +36,6 @@
     <main id="main-content">
       {{ content }}
     </main>
-  </div>
-
-  <div id="graph-modal" aria-hidden="true">
-    <div class="graph-modal-backdrop"></div>
-    <div class="graph-modal-panel" role="dialog" aria-modal="true" aria-label="File explorer">
-      <div id="graph-modal-mount" class="graph-modal-mount"></div>
-    </div>
   </div>
 
   <script>
