@@ -11,34 +11,9 @@
   --accent:     #1a8917;
   --content-w:  728px;
   --list-w:     680px;
-  --font-sans:  "Anthropic Sans", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", system-ui, sans-serif;
-  --font-serif: "Anthropic Serif", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", Georgia, "Times New Roman", serif;
+  --font-sans:  "DM Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: "Lora", Georgia, "Times New Roman", serif;
   --font-mono:  "JetBrains Mono", "Fira Code", monospace;
-}
-
-@font-face {
-  font-family: "Anthropic Sans";
-  src: url("/assets/fonts/anthropic/AnthropicSans_Roman_Web.reference.woff2") format("woff2");
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Anthropic Sans";
-  src: url("/assets/fonts/anthropic/AnthropicSans_Italic_Web.reference.woff2") format("woff2");
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Anthropic Serif";
-  src: url("/assets/fonts/anthropic/AnthropicSerif_Roman_Web.reference.woff2") format("woff2");
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Anthropic Serif";
-  src: url("/assets/fonts/anthropic/AnthropicSerif_Italic_Web.reference.woff2") format("woff2");
-  font-style: italic;
-  font-display: swap;
 }
 
 /* ============================================================
@@ -52,8 +27,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-serif);
-  line-height: 1.55;
+  font-family: var(--font-sans);
+  line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -1531,9 +1506,9 @@ body.page-graph .graph-surface {
   }
 
   .post-content {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     line-height: 1.62;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
   }
 }
 
