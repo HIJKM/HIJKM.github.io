@@ -9,17 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}{% if page.url == '/graph/' %} page-graph{% endif %}">
+<body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}">
 
   <header class="site-header">
     <div id="reading-progress"></div>
     <a class="site-logo" href="{{ '/' | relative_url }}">HIJKM</a>
     <div class="header-search" id="header-search">
-      <div class="search-input-wrap">
-        <input id="search-input" class="header-search-input" type="text"
-               placeholder="search…" autocomplete="off" spellcheck="false">
-      </div>
-      <button id="search-btn" class="btn-search" aria-label="검색">
+      <button id="search-btn" class="btn-search" type="button" aria-label="검색">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.6"/>
           <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -28,10 +24,22 @@
     </div>
   </header>
 
-  <!-- 검색 드롭다운 -->
-  <div id="search-dropdown" class="search-dropdown">
-    <div class="search-dropdown-inner">
-      <div id="search-results"></div>
+  <div id="search-overlay" class="search-overlay" aria-hidden="true">
+    <div class="search-overlay-panel" role="dialog" aria-modal="true" aria-label="검색">
+      <div class="search-overlay-topbar">
+        <button id="search-overlay-close" class="search-overlay-close" type="button" aria-label="검색 닫기">×</button>
+        <span class="search-overlay-label">search</span>
+        <span class="search-overlay-key">esc</span>
+      </div>
+
+      <label class="search-overlay-field">
+        <span class="search-overlay-icon" aria-hidden="true">⌕</span>
+        <input id="search-overlay-input" type="search" placeholder="찾고 싶은 단어를 입력하세요" autocomplete="off" spellcheck="false">
+      </label>
+
+      <div id="search-results" class="search-results" aria-live="polite">
+        <p class="search-prompt">제목과 글 내용에서 검색합니다.</p>
+      </div>
     </div>
   </div>
 
@@ -45,8 +53,6 @@
     window.CURRENT_PAGE = "{{ page.url }}";
     window.SITE_BASEURL = "{{ site.baseurl }}";
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script src="{{ '/assets/js/graph.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </body>
 </html>

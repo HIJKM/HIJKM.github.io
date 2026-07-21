@@ -21,13 +21,13 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ══════════════════════════════════════
      Shared data cache
      ══════════════════════════════════════ */
-  let _graphData = null;
-  function fetchGraphData() {
-    if (_graphData) return Promise.resolve(_graphData);
+  let _postIndex = null;
+  function fetchPostIndex() {
+    if (_postIndex) return Promise.resolve(_postIndex);
     const base = window.SITE_BASEURL || '';
-    return fetch(`${base}/graph-data.json`)
+    return fetch(`${base}/search-data.json`)
       .then(r => r.json())
-      .then(d => { _graphData = d; return d; });
+      .then(d => { _postIndex = d.posts || []; return _postIndex; });
   }
 
   // toISOString()은 UTC 기준 → 한국(UTC+9)에서 오늘이 어제로 나옴
@@ -37,15 +37,52 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ══════════════════════════════════════
-     Inline header search
+     Full-screen search overlay
      ══════════════════════════════════════ */
-  const headerSearch   = document.getElementById('header-search');
-  const searchBtn      = document.getElementById('search-btn');
-  const searchInput    = document.getElementById('search-input');
-  const searchResults  = document.getElementById('search-results');
-  const searchDropdown = document.getElementById('search-dropdown');
+  const searchBtn     = document.getElementById('search-btn');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchClose   = document.getElementById('search-overlay-close');
+  const searchInput   = document.getElementById('search-overlay-input');
+  const searchResults = document.getElementById('search-results');
 
-  let posts = null;
+  const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[char]));
+
+  const queryTerms = query => [...new Set(query.toLowerCase().split(/\s+/).filter(Boolean))];
+
+  function highlightMatches(text, query) {
+    const terms = queryTerms(query);
+    if (!terms.length) return escapeHtml(text);
+    const pattern = terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    return escapeHtml(text).replace(new RegExp(`(${pattern})`, 'gi'), '<mark>$1</mark>');
+  }
+
+  function snippetFor(post, query) {
+    const content = String(post.content || '').replace(/\s+/g, ' ').trim();
+    const lowerContent = content.toLowerCase();
+    const terms = queryTerms(query);
+    let matchIndex = -1;
+    let matchLength = 0;
+
+    terms.some(term => {
+      const index = lowerContent.indexOf(term);
+      if (index < 0) return false;
+      matchIndex = index;
+      matchLength = term.length;
+      return true;
+    });
+
+    if (matchIndex < 0) {
+      return content.length > 180 ? `${content.slice(0, 180).trim()}…` : content;
+    }
+
+    const start = Math.max(0, matchIndex - 92);
+    const end = Math.min(content.length, matchIndex + matchLength + 128);
+    const prefix = start > 0 ? '…' : '';
+    const suffix = end < content.length ? '…' : '';
+    return `${prefix}${content.slice(start, end).trim()}${suffix}`;
+  }
 
   function fmtDate(iso) {
     if (!iso) return '';
@@ -53,36 +90,58 @@ document.addEventListener('DOMContentLoaded', function () {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  async function loadPosts() {
-    if (posts !== null) return;
-    try { const data = await fetchGraphData(); posts = data.nodes || []; }
-    catch (e) { posts = []; }
-  }
-
   function openSearch() {
-    headerSearch?.classList.add('is-open');
-    searchInput?.focus();       // 동기 호출 → 모바일 키보드 즉시 팝업
-    loadPosts();
+    if (!searchOverlay) return;
+    searchOverlay.classList.add('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('search-is-open');
+    searchInput?.focus();
+    fetchPostIndex()
+      .then(posts => renderSearchResults(searchInput?.value || '', posts))
+      .catch(() => {
+        if (searchResults) searchResults.innerHTML = '<p class="search-empty">검색 데이터를 불러오지 못했습니다.</p>';
+      });
   }
 
   function closeSearch() {
-    if (!headerSearch?.classList.contains('is-open')) return;
-    headerSearch.classList.remove('is-open');
-    searchDropdown?.classList.remove('is-open');
-    if (searchInput)   searchInput.value = '';
-    if (searchResults) searchResults.innerHTML = '';
+    if (!searchOverlay?.classList.contains('is-open')) return;
+    searchOverlay.classList.remove('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('search-is-open');
+    if (searchInput) searchInput.value = '';
+    if (searchResults) searchResults.innerHTML = '<p class="search-prompt">제목과 글 내용에서 검색합니다.</p>';
     searchInput?.blur();
   }
 
-  searchBtn?.addEventListener('click', e => {
-    e.stopPropagation();
-    headerSearch?.classList.contains('is-open') ? closeSearch() : openSearch();
-  });
+  function renderSearchResults(query, posts) {
+    if (!searchResults) return;
+    const terms = queryTerms(query);
+    if (!terms.length) {
+      searchResults.innerHTML = '<p class="search-prompt">제목과 글 내용에서 검색합니다.</p>';
+      return;
+    }
 
-  // pointerdown = 모바일에서 click보다 빠르게 반응
-  document.addEventListener('pointerdown', e => {
-    if (headerSearch && !headerSearch.contains(e.target) &&
-        searchDropdown && !searchDropdown.contains(e.target)) closeSearch();
+    const matches = (posts || []).filter(post => {
+      const haystack = `${post.title || ''} ${post.content || ''}`.toLowerCase();
+      return terms.every(term => haystack.includes(term));
+    });
+
+    searchResults.innerHTML = matches.length
+      ? `<p class="search-count">${matches.length} results</p>${matches.map(post => `
+          <a class="search-result" href="${escapeHtml(post.url)}">
+            <div class="search-result-copy">
+              <h2 class="search-result-title">${highlightMatches(post.title, query)}</h2>
+              <p class="search-result-snippet">${highlightMatches(snippetFor(post, query), query)}</p>
+            </div>
+            <time class="search-result-date">${fmtDate(post.date)}</time>
+          </a>`).join('')}`
+      : '<p class="search-empty">일치하는 글이 없습니다.</p>';
+  }
+
+  searchBtn?.addEventListener('click', openSearch);
+  searchClose?.addEventListener('click', closeSearch);
+  searchOverlay?.addEventListener('click', event => {
+    if (event.target === searchOverlay) closeSearch();
   });
 
   document.addEventListener('keydown', e => {
@@ -90,25 +149,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
   });
 
-  searchInput?.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
-    if (!q) { searchDropdown?.classList.remove('is-open'); if (searchResults) searchResults.innerHTML = ''; return; }
-
-    const matches = (posts || []).filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      (p.tags || []).some(t => t.toLowerCase().includes(q))
-    );
-
-    if (searchResults) {
-      searchResults.innerHTML = matches.length
-        ? matches.map(p => `
-            <a class="search-result" href="${p.url}">
-              <span class="search-result-title">${p.title}</span>
-              <span class="search-result-date">${fmtDate(p.date)}</span>
-            </a>`).join('')
-        : '<p class="search-empty">No results found.</p>';
+  searchInput?.addEventListener('input', async () => {
+    const query = searchInput.value.trim();
+    try {
+      const posts = await fetchPostIndex();
+      renderSearchResults(query, posts);
+    } catch (e) {
+      if (searchResults) searchResults.innerHTML = '<p class="search-empty">검색 데이터를 불러오지 못했습니다.</p>';
     }
-    searchDropdown?.classList.toggle('is-open', !!q);
   });
 
   /* ══════════════════════════════════════
@@ -123,8 +171,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* 미니 히트맵 (접힌 요약줄) */
   if (miniEl) {
-    fetchGraphData()
-      .then(d => renderMiniHeatmap(d.nodes || []))
+    fetchPostIndex()
+      .then(posts => renderMiniHeatmap(posts || []))
       .catch(() => renderMiniHeatmap([]));
   }
 
@@ -198,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!heatmapInited) {
         heatmapInited = true;
-        fetchGraphData()
-          .then(d => { renderHeatmap(d.nodes || []); doSlide(); })
+        fetchPostIndex()
+          .then(posts => { renderHeatmap(posts || []); doSlide(); })
           .catch(() => { renderHeatmap([]); doSlide(); });
       } else {
         doSlide();
