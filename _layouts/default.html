@@ -11,6 +11,14 @@
 </head>
 <body class="page-{{ page.layout | default: 'default' }}{% if page.url == '/' %} is-home{% endif %}">
 
+  {% if page.url == '/' %}
+  <button id="search-btn" class="btn-search home-search" type="button" aria-label="검색">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  </button>
+  {% else %}
   <header class="site-header">
     <div id="reading-progress"></div>
     <a class="site-logo" href="{{ '/' | relative_url }}">HIJKM</a>
@@ -23,6 +31,7 @@
       </button>
     </div>
   </header>
+  {% endif %}
 
   <div id="search-overlay" class="search-overlay" aria-hidden="true">
     <div class="search-overlay-panel" role="dialog" aria-modal="true" aria-label="검색">

@@ -125,6 +125,10 @@ img { max-width: 100%; display: block; }
   padding: 0 1.5rem;
 }
 
+body.is-home .site-shell {
+  padding-top: 1.5rem;
+}
+
 /* ============================================================
    Home — top bar
    ============================================================ */
@@ -133,7 +137,6 @@ img { max-width: 100%; display: block; }
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 0;
-  border-bottom: 1px solid var(--line);
 }
 
 .home-stat {
@@ -206,10 +209,7 @@ img { max-width: 100%; display: block; }
 
 .post-card {
   padding: 2rem 0;
-  border-bottom: 1px solid var(--line);
 }
-
-.post-card:last-child { border-bottom: none; }
 
 .post-card-link { display: block; }
 
@@ -812,7 +812,7 @@ img { max-width: 100%; display: block; }
 
   .home-sidebar {
     position: sticky;
-    top: calc(80px + 1.5rem);
+    top: calc(1.5rem + 1.5rem);
     --hm-cell: 7px;
   }
 
@@ -823,7 +823,6 @@ img { max-width: 100%; display: block; }
     justify-content: flex-start;
     gap: 0.85rem;
     padding: 0 0 1.25rem;
-    border-bottom: 1px solid var(--line);
     margin-bottom: 0;
   }
 
@@ -835,11 +834,11 @@ img { max-width: 100%; display: block; }
 
   /* 포스트 목록 영역 */
   .home-main {
-    border-top: 1px solid var(--line);
+    border-top: none;
   }
 
   .home-main .post-card:first-child {
-    padding-top: 1.5rem;
+    padding-top: 2rem;
   }
 }
 
@@ -849,6 +848,13 @@ img { max-width: 100%; display: block; }
 .header-search {
   display: flex;
   align-items: center;
+}
+
+.home-search {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 110;
 }
 
 .btn-search {
@@ -1032,7 +1038,7 @@ body.search-is-open { overflow: hidden; }
 :root { --hm-cell: 11px; }
 
 .heatmap-section {
-  border-bottom: 1px solid var(--line);
+  border-bottom: none;
 }
 
 .heatmap-summary {
@@ -1186,6 +1192,8 @@ body.search-is-open { overflow: hidden; }
   .site-header { padding: 0 1.25rem; height: 68px; }
   .site-logo   { font-size: 2.2rem; }
   .site-shell  { padding: 0 1rem; }
+  body.is-home .site-shell { padding-top: 1.25rem; }
+  .home-search { top: 1.25rem; right: 1rem; }
   .home-bar    { padding: 1.25rem 0; }
   .home-stat-num { font-size: 1.4rem; }
   .reading-surface { padding: 2rem 0 3rem; }
