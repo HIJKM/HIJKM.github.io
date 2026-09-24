@@ -13,7 +13,6 @@ lang: ko-KR
 
 # Chirpy-style settings
 theme_mode: dark   # light | dark
-avatar: /assets/img/avatar.png
 
 toc: true
 comments:
@@ -51,6 +50,7 @@ defaults:
       toc: true
 
 exclude:
+  - drafts
   - Gemfile
   - Gemfile.lock
   - node_modules
