@@ -265,12 +265,20 @@ body.is-home .site-shell {
 /* ============================================================
    Post page
    ============================================================ */
+.page-post {
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", Helvetica, Arial, sans-serif;
+  --font-serif: "Lora", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", Georgia, serif;
+}
+
+.page-post .site-header { height: 64px; }
+.page-post .site-logo { font-size: 1.25rem; }
+
 .reading-surface {
   padding: 2.25rem 0 3rem;
 }
 
 .post-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.875rem;
 }
 
 .post-kicker {
@@ -284,12 +292,12 @@ body.is-home .site-shell {
 
 .post-title {
   font-family: var(--font-sans);
-  font-size: 31px;
-  font-weight: 620;
+  font-size: 32px;
+  font-weight: 650;
   color: var(--ink);
-  letter-spacing: 0;
-  line-height: 1.08;
-  margin: 0 0 1.75rem;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin: 0 0 1.125rem;
 }
 
 .post-description {
@@ -304,31 +312,17 @@ body.is-home .site-shell {
 .post-meta {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  min-height: 46px;
-  color: var(--ink);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 34px;
+  color: var(--ink-muted);
   font-family: var(--font-sans);
-}
-
-.author-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 17px;
-  font-weight: 620;
-  line-height: 1;
 }
 
 .author-name {
   color: var(--ink);
-  font-size: 18px;
-  font-weight: 520;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
 }
@@ -336,13 +330,11 @@ body.is-home .site-shell {
 .read-meta,
 .meta-dot {
   color: var(--ink-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;
 }
-
-.meta-dot { margin: 0 -0.375rem; }
 
 .article-kicker {
   display: inline-flex;
@@ -360,25 +352,13 @@ body.is-home .site-shell {
   text-underline-offset: 3px;
 }
 
-.engagement-bar {
-  width: 100%;
-  min-height: 54px;
-  margin: 1.875rem 0 2rem;
-  padding: 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .post-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.625rem;
   min-width: 0;
+  margin-top: 0.875rem;
   font-family: var(--font-sans);
   font-size: 12px;
 }
@@ -397,9 +377,10 @@ body.is-home .site-shell {
    Post share button
    ============================================================ */
 .post-share {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  margin-left: auto;
   flex: 0 0 auto;
 }
 
@@ -412,8 +393,8 @@ body.is-home .site-shell {
   background: none;
   border: 0;
   border-radius: 999px;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease;
@@ -421,14 +402,24 @@ body.is-home .site-shell {
 
 .btn-share:hover {
   color: var(--accent);
-  background: rgba(217, 119, 87, 0.1);
+  background: rgba(26, 137, 23, 0.08);
+}
+
+.btn-share:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .share-copied {
   display: none;
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.375rem);
+  transform: translateY(-50%);
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--accent);
+  white-space: nowrap;
 }
 
 .share-copied.is-visible { display: inline; }
@@ -439,7 +430,7 @@ body.is-home .site-shell {
 .post-content {
   font-family: var(--font-serif);
   font-size: 17px;
-  line-height: 1.62;
+  line-height: 1.7;
   letter-spacing: 0;
   color: var(--ink-soft);
   min-width: 0;
@@ -722,69 +713,6 @@ body.is-home .site-shell {
   letter-spacing: -0.03em;
   color: var(--ink);
   margin: 0 0 2rem;
-}
-
-/* ============================================================
-   Comments
-   ============================================================ */
-.comments-block {
-  margin-top: 2.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--line);
-}
-
-.comments-header {
-  margin-bottom: 1rem;
-}
-
-.comments-count {
-  font-family: var(--font-sans);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.comments-compose {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  cursor: text;
-  transition: border-color 140ms ease;
-}
-
-.comments-compose:hover {
-  border-color: rgba(0, 0, 0, 0.25);
-}
-
-.comments-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.08);
-  flex-shrink: 0;
-}
-
-.comments-input-fake {
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  color: var(--ink-faint);
-  flex: 1;
-}
-
-.comments-empty {
-  margin-top: 1rem;
-  padding: 1.25rem 0;
-  text-align: center;
-}
-
-.comments-empty p {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  color: var(--ink-faint);
-  margin: 0;
 }
 
 /* ============================================================
@@ -1182,17 +1110,13 @@ body.search-is-open { overflow: hidden; }
     font-family: var(--font-sans);
     line-height: 1.55;
   }
-
-  .post-content {
-    font-family: var(--font-sans);
-    line-height: 1.62;
-    letter-spacing: -0.01em;
-  }
 }
 
 @media (max-width: 680px) {
   .site-header { padding: 0 1.25rem; height: 68px; }
   .site-logo   { font-size: 1.35rem; }
+  .page-post .site-header { height: 60px; }
+  .page-post .site-logo { font-size: 1.2rem; }
   .site-shell  { padding: 0 1rem; }
   body.is-home .site-shell { padding-top: 1.25rem; }
   .home-search { top: 1.25rem; right: 1rem; }
@@ -1207,13 +1131,8 @@ body.search-is-open { overflow: hidden; }
 
   .post-card-link h2 { font-size: 1.3rem; }
 
-  .post-title { font-size: 26px; line-height: 1.1; }
-  .post-meta { gap: 0.625rem; flex-wrap: wrap; }
-  .author-avatar { width: 38px; height: 38px; font-size: 15px; }
-  .author-name { font-size: 17px; }
-  .read-meta, .meta-dot { font-size: 13px; }
-  .engagement-bar { min-height: 50px; margin: 1.5rem 0 1.75rem; }
-  .post-content { font-size: 16px; line-height: 1.66; }
+  .post-title { font-size: 28px; }
+  .post-content { font-size: 16px; line-height: 1.75; }
   .post-content h2 { font-size: 22px; }
   .post-content h3 { font-size: 18px; }
   .post-content a {
