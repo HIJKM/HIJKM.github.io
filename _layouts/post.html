@@ -10,7 +10,9 @@ layout: default
 
     <div class="post-meta">
       {% if site.author.avatar %}
-      <img class="author-avatar" src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}">
+      <button type="button" class="author-avatar-btn" id="avatar-open" aria-label="프로필 크게 보기">
+        <img class="author-avatar" src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}">
+      </button>
       {% endif %}
       <span class="read-meta">
         {% assign words = page.content | number_of_words %}
@@ -46,3 +48,10 @@ layout: default
     {{ content }}
   </div>
 </article>
+
+{% if site.author.avatar %}
+<div id="avatar-overlay" class="avatar-overlay" aria-hidden="true">
+  <button type="button" class="avatar-overlay-close" id="avatar-close" aria-label="닫기">×</button>
+  <img src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}">
+</div>
+{% endif %}

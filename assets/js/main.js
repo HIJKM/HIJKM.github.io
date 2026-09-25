@@ -145,7 +145,10 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeSearch(); }
+    if (e.key === 'Escape') {
+      if (document.getElementById('avatar-overlay')?.classList.contains('is-open')) return;
+      closeSearch();
+    }
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
   });
 
@@ -374,6 +377,41 @@ document.addEventListener('DOMContentLoaded', function () {
       grid.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
     }
   }
+
+  /* ══════════════════════════════════════
+     Profile avatar overlay
+     ══════════════════════════════════════ */
+  (function () {
+    const openBtn = document.getElementById('avatar-open');
+    const overlay = document.getElementById('avatar-overlay');
+    const closeBtn = document.getElementById('avatar-close');
+    if (!openBtn || !overlay) return;
+
+    function openAvatar() {
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('avatar-is-open');
+      closeBtn?.focus();
+    }
+
+    function closeAvatar() {
+      if (!overlay.classList.contains('is-open')) return;
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('avatar-is-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openAvatar);
+    closeBtn?.addEventListener('click', event => {
+      event.stopPropagation();
+      closeAvatar();
+    });
+    overlay.addEventListener('click', closeAvatar);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAvatar();
+    });
+  })();
 
   /* ══════════════════════════════════════
      Share button

@@ -458,14 +458,68 @@ body.is-home .site-shell {
   white-space: nowrap;
 }
 
+.author-avatar-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+  border-radius: var(--radius);
+  flex: 0 0 auto;
+}
+
+.author-avatar-btn:hover { opacity: 0.8; }
+
 .author-avatar {
   width: 64px;
   height: 64px;
   border-radius: var(--radius);
   object-fit: contain;
   background: var(--bg);
-  flex: 0 0 auto;
+  display: block;
 }
+
+.avatar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-page);
+  background: var(--bg);
+  cursor: pointer;
+  animation: searchOverlayIn 180ms ease both;
+}
+
+.avatar-overlay.is-open { display: flex; }
+
+.avatar-overlay img {
+  max-width: min(100%, 720px);
+  max-height: 86vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.avatar-overlay-close {
+  position: absolute;
+  top: 1.25rem;
+  right: var(--gutter);
+  width: var(--icon-hit);
+  height: var(--icon-hit);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-muted);
+  font-family: var(--font-serif);
+  font-size: var(--size-stat);
+  line-height: var(--leading-tight);
+  cursor: pointer;
+}
+
+.avatar-overlay-close:hover { color: var(--ink); }
 
 .read-meta,
 .meta-dot {
@@ -931,7 +985,8 @@ body.is-home .site-shell {
   animation: searchOverlayIn 180ms ease both;
 }
 
-body.search-is-open { overflow: hidden; }
+body.search-is-open,
+body.avatar-is-open { overflow: hidden; }
 
 .search-overlay.is-open { display: block; }
 
