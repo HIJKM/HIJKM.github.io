@@ -7,7 +7,7 @@ require "yaml"
 published_at = Time.now.getlocal("+09:00")
 plans = []
 
-Dir.glob("drafts/**/*.md").sort.each do |draft|
+Dir.glob("_drafts/**/*.md").sort.each do |draft|
   source = File.read(draft, encoding: "UTF-8")
   front_matter = source.match(/\A---\r?\n(.*?)\r?\n---(?:\r?\n|\z)/m)
   raise "Unclosed front matter: #{draft}" if source.start_with?("---") && !front_matter
@@ -25,7 +25,7 @@ Dir.glob("drafts/**/*.md").sort.each do |draft|
   metadata["title"] = name if !metadata["title"].is_a?(String) || metadata["title"].strip.empty?
   metadata["date"] = published_at.strftime("%Y-%m-%d %H:%M:%S %z")
 
-  archive = File.join("archive", "posts", draft.delete_prefix("drafts/"))
+  archive = File.join("_scaffold", "archive", "posts", draft.delete_prefix("_drafts/"))
   post = File.join("_posts", "#{published_at.strftime('%Y-%m-%d')}-#{slug}.md")
   raise "Archive already exists: #{archive}" if File.exist?(archive)
   raise "Post already exists: #{post}" if File.exist?(post)

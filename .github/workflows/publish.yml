@@ -15,6 +15,10 @@ jobs:
     permissions:
       contents: write
       pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,21 +26,28 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
-      - run: ruby test/publish_test.rb
-      - run: ruby scripts/publish.rb
+      - run: ruby _scaffold/test/publish_test.rb
+      - run: ruby _scaffold/scripts/publish.rb
       - name: Save published posts
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git add -A
-          published=false
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "$(TZ=Asia/Seoul date +'%y.%m.%d'). feat: 초안 게시글 자동 발행" -m "이 변경은 GitHub Actions가 수행했다."
             git push origin HEAD:main
-            published=true
           fi
-          if [ "$published" = true ] || [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
-            gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
-          fi
+      - name: Stage posts for Jekyll
+        run: |
+          mkdir -p _scaffold/_posts
+          cp -R _posts/. _scaffold/_posts/
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./_scaffold
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

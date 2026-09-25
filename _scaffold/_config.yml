@@ -52,7 +52,6 @@ defaults:
       toc: true
 
 exclude:
-  - drafts
   - archive
   - scripts
   - test

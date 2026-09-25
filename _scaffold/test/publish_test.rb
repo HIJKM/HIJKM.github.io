@@ -9,7 +9,7 @@ class PublishTest < Minitest::Test
 
   def setup
     @root = Dir.mktmpdir("hijkm-publish-")
-    FileUtils.mkdir_p(File.join(@root, "drafts"))
+    FileUtils.mkdir_p(File.join(@root, "_drafts"))
   end
 
   def teardown
@@ -18,15 +18,15 @@ class PublishTest < Minitest::Test
 
   def test_publishes_checked_draft_and_preserves_original
     original = "---\npublish: true\ntags:\n  - 기록\n---\n안녕하세요.\n"
-    File.write(File.join(@root, "drafts", "첫 글.md"), original)
-    File.write(File.join(@root, "drafts", "보류.md"), "---\npublish: false\n---\n아직 작성 중.\n")
+    File.write(File.join(@root, "_drafts", "첫 글.md"), original)
+    File.write(File.join(@root, "_drafts", "보류.md"), "---\npublish: false\n---\n아직 작성 중.\n")
 
     output, status = run_publish
 
     assert status.success?, output
-    assert_equal original, File.read(File.join(@root, "archive", "posts", "첫 글.md"))
-    refute File.exist?(File.join(@root, "drafts", "첫 글.md"))
-    assert File.exist?(File.join(@root, "drafts", "보류.md"))
+    assert_equal original, File.read(File.join(@root, "_scaffold", "archive", "posts", "첫 글.md"))
+    refute File.exist?(File.join(@root, "_drafts", "첫 글.md"))
+    assert File.exist?(File.join(@root, "_drafts", "보류.md"))
 
     posts = Dir.glob(File.join(@root, "_posts", "*.md"))
     assert_equal 1, posts.length
@@ -45,8 +45,8 @@ class PublishTest < Minitest::Test
   end
 
   def test_existing_archive_prevents_partial_publication
-    File.write(File.join(@root, "drafts", "첫 글.md"), "---\npublish: true\n---\n새 글\n")
-    archive = File.join(@root, "archive", "posts", "첫 글.md")
+    File.write(File.join(@root, "_drafts", "첫 글.md"), "---\npublish: true\n---\n새 글\n")
+    archive = File.join(@root, "_scaffold", "archive", "posts", "첫 글.md")
     FileUtils.mkdir_p(File.dirname(archive))
     File.write(archive, "기존 원문")
 
@@ -55,7 +55,7 @@ class PublishTest < Minitest::Test
     refute status.success?, output
     assert_includes output, "archive"
     assert_equal "기존 원문", File.read(archive)
-    assert File.exist?(File.join(@root, "drafts", "첫 글.md"))
+    assert File.exist?(File.join(@root, "_drafts", "첫 글.md"))
     assert_empty Dir.glob(File.join(@root, "_posts", "*.md"))
   end
 
