@@ -10,7 +10,7 @@ layout: default
 
     <div class="post-meta">
       {% if site.author.avatar %}
-      <img class="author-avatar" src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}" width="28" height="28">
+      <img class="author-avatar" src="{{ site.author.avatar | relative_url }}" alt="{{ site.author.name }}">
       {% endif %}
       <span class="read-meta">
         {% assign words = page.content | number_of_words %}

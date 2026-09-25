@@ -459,10 +459,10 @@ body.is-home .site-shell {
 }
 
 .author-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-pill);
-  object-fit: cover;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius);
+  object-fit: contain;
   background: var(--bg);
   flex: 0 0 auto;
 }
