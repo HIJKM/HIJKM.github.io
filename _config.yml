@@ -51,6 +51,9 @@ defaults:
 
 exclude:
   - drafts
+  - archive
+  - scripts
+  - test
   - Gemfile
   - Gemfile.lock
   - node_modules
