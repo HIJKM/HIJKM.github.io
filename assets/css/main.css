@@ -459,23 +459,24 @@ body.is-home .site-shell {
 }
 
 .author-avatar-btn {
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   background: none;
   line-height: 0;
   cursor: pointer;
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
   flex: 0 0 auto;
 }
 
 .author-avatar-btn:hover { opacity: 0.8; }
 
 .author-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius);
-  object-fit: contain;
-  background: var(--bg);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
