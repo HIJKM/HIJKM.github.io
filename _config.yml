@@ -5,7 +5,8 @@ url: "https://username.github.io"
 baseurl: ""
 
 author:
-  name: "뭘봐"
+  name: "HIJKM"
+  avatar: "/assets/img/avatar.png"
   email: ""
 
 timezone: Asia/Seoul

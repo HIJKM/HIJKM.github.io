@@ -21,8 +21,12 @@
   /* Layout */
   --content-w: 728px;
   --list-w:    680px;
+  --read-w:    760px;
+  --read-pad:  3rem;
   --header-h:  80px;
   --gutter:    1.5rem;
+  --shell-max: var(--list-w);
+  --shell-pad: var(--gutter);
 
   /* Family */
   --font-sans:  "DM Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -221,8 +225,23 @@ img { max-width: 100%; display: block; }
   height: var(--header-h);
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+  width: 100%;
+  height: 100%;
   padding: 0 var(--space-card);
+}
+
+.page-post .site-header-inner {
+  width: min(100%, var(--read-w));
+  padding: 0 var(--read-pad);
+  justify-content: flex-start;
 }
 
 #reading-progress {
@@ -264,12 +283,13 @@ img { max-width: 100%; display: block; }
    Page shell
    ============================================================ */
 .site-shell {
-  width: min(100%, var(--list-w));
+  width: min(100%, var(--shell-max));
   margin: 0 auto;
-  padding: 0 var(--gutter);
+  padding: 0 var(--shell-pad);
 }
 
 body.is-home .site-shell {
+  position: relative;
   padding-top: var(--space-page);
 }
 
@@ -387,8 +407,16 @@ body.is-home .site-shell {
 /* ============================================================
    Post page
    ============================================================ */
+.page-post .site-shell {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
 .reading-surface {
-  padding: 2.25rem 0 3rem;
+  width: min(100%, var(--read-w));
+  margin: 0 auto;
+  padding: 2.25rem var(--read-pad) 4rem;
 }
 
 .post-header {
@@ -428,6 +456,15 @@ body.is-home .site-shell {
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   white-space: nowrap;
+}
+
+.author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+  background: var(--bg);
+  flex: 0 0 auto;
 }
 
 .read-meta,
@@ -793,15 +830,20 @@ body.is-home .site-shell {
    PC Sidebar layout  (≥ 860px)
    ============================================================ */
 @media (min-width: 860px) {
-  .site-shell {
-    width: min(100%, 960px);
-    padding: 0 2.5rem;
+  :root {
+    --shell-max: 960px;
+    --shell-pad: 2.5rem;
   }
 
-  .page-post .reading-surface {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 2.25rem 3rem 4rem;
+  .site-shell {
+    width: min(100%, var(--shell-max));
+    padding: 0 var(--shell-pad);
+  }
+
+  .page-post .site-shell {
+    width: 100%;
+    max-width: none;
+    padding: 0;
   }
 
   .home-layout {
@@ -850,9 +892,9 @@ body.is-home .site-shell {
 }
 
 .home-search {
-  position: fixed;
+  position: absolute;
   top: 1.25rem;
-  right: var(--gutter);
+  right: var(--shell-pad);
   z-index: 110;
 }
 
@@ -1179,11 +1221,12 @@ body.search-is-open { overflow: hidden; }
     --size-heading: 1.3rem;
     --space-page: 1.25rem;
     --space-card: 1.75rem;
+    --read-pad: 1.25rem;
   }
 
-  .site-header { padding: 0 1.25rem; }
-  .home-search { top: 1.25rem; right: var(--gutter); }
-  .reading-surface { padding: var(--space-card) 0 3rem; }
+  .site-header-inner { padding: 0 1.25rem; }
+  .page-post .site-header-inner { padding: 0 var(--read-pad); }
+  .reading-surface { padding: var(--space-card) var(--read-pad) 3rem; }
   .post-content h1[data-heading]::before,
   .post-content h2[data-heading]::before,
   .post-content h3[data-heading]::before { display: none; }
