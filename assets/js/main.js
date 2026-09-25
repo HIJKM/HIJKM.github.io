@@ -216,14 +216,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ② 미니 셀 완료 후 height 슬라이드 */
     setTimeout(() => {
-      const doSlide = () => {
-        if (!heatmapInner) return;
+      if (!heatmapInner) { heatmapAnimating = false; return; }
+      heatmapInner.style.height   = '0';
+      heatmapInner.style.overflow = 'hidden';
+      heatmapSection.setAttribute('open', '');
 
-        // details 열기 → scrollHeight 측정 → 즉시 0으로 고정 (paint 전)
-        heatmapSection.setAttribute('open', '');
+      const doSlide = () => {
+        // 열린 details에서 내용을 채운 뒤 실제 높이 측정
         const targetH = heatmapInner.scrollHeight;
-        heatmapInner.style.height   = '0';
-        heatmapInner.style.overflow = 'hidden';
 
         // double-rAF: 첫 번째는 0-height 상태를 커밋, 두 번째에 트랜지션 시작
         requestAnimationFrame(() => {
@@ -305,10 +305,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const tooltip  = document.getElementById('heatmap-tooltip');
     if (!grid) return;
 
-    const WEEKS = 26, CELL_GAP = 2;
+    const MAX_WEEKS = 26, MIN_CELL = 10, CELL_GAP = 2;
     const colsEl   = document.querySelector('.heatmap-cols');
     const availW   = colsEl ? colsEl.clientWidth : 600;
-    const cellSize = Math.max(10, Math.floor((availW - (WEEKS - 1) * CELL_GAP) / WEEKS));
+    const weeks    = Math.min(MAX_WEEKS, Math.max(1, Math.floor((availW + CELL_GAP) / (MIN_CELL + CELL_GAP))));
+    const cellSize = Math.max(MIN_CELL, Math.floor((availW - (weeks - 1) * CELL_GAP) / weeks));
     document.documentElement.style.setProperty('--hm-cell', cellSize + 'px');
 
     const CELL_STEP = cellSize + CELL_GAP;
@@ -318,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const start = new Date(today);
-    start.setDate(start.getDate() - WEEKS * 7 + 1 - start.getDay());
+    start.setDate(start.getDate() - start.getDay() - (weeks - 1) * 7);
 
     let lastMonth = -1, colIndex = 0;
     const cur = new Date(start);
